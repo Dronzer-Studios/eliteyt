@@ -5,3 +5,4 @@ secrets/
 node_modules/
 .render-*
 .seg-*
+web-ext-artifacts/
