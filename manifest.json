@@ -3,6 +3,7 @@
   "name": "EliteYT",
   "version": "0.2.0",
   "description": "Battery saver, speed controls, SponsorBlock, DeArrow, Return YouTube Dislike, clean UI, stats and the experimental watch layout for YouTube.",
+  "browser_specific_settings": { "gecko": { "id": "eliteyt@dronzer-studios", "strict_min_version": "128.0" } },
   "permissions": ["storage"],
   "host_permissions": ["https://www.youtube.com/*", "https://sponsor.ajay.app/*", "https://dearrow-thumb.ajay.app/*", "https://returnyoutubedislikeapi.com/*"],
   "action": { "default_popup": "popup.html", "default_title": "EliteYT" },
