@@ -62,6 +62,7 @@
     const root = document.documentElement, L = s.layout || {};
     for (const [k, c] of Object.entries(CLS)) root.classList.toggle(c, !!s[k]);
     root.classList.toggle('eyt-pause-noblur', s.pauseBlur === false);
+    root.classList.toggle('eyt-pause-notitle', s.pauseTitle === false);
     root.classList.toggle('eyt-side-left', L.side === 'left');
     root.classList.toggle('eyt-card-grid', (L.card || 'grid') === 'grid');
     root.style.setProperty('--eyt-side', (L.width || 400) + 'px');
@@ -268,6 +269,12 @@
       oninput: () => { val.textContent = fmt(input.value); }, onchange: () => commit(+input.value) });
     return [val, input];
   };
+  // pause-screen parts; with both off there is nothing left to show, so drop the overlay
+  const togglePause = (k) => {
+    set({ [k]: s[k] === false });
+    if (s.pauseBlur === false && s.pauseTitle === false) hidePause();
+    applyClasses(); renderTweaks();
+  };
   function renderTweaks() {
     const c = channel();
     const kind = isExempt() ? 'never changed' : s.musicSeparate && isMusic() ? 'music speed' : 'normal speed';
@@ -319,7 +326,8 @@
       h('div', { class: 'eyt-tw-sec' },
         row('Quality follows speed', sw(s.autoQuality, () => { set({ autoQuality: !s.autoQuality }); lastQ = ''; applyQuality(); renderTweaks(); })),
         row('Ambient mode off', sw(s.noAmbient, () => { set({ noAmbient: !s.noAmbient }); applyClasses(); renderTweaks(); })),
-        row('Blur video when paused', sw(s.pauseBlur !== false, () => { set({ pauseBlur: s.pauseBlur === false }); applyClasses(); renderTweaks(); })))
+        row('Blur video when paused', sw(s.pauseBlur !== false, () => togglePause('pauseBlur'))),
+        row('Show title when paused', sw(s.pauseTitle !== false, () => togglePause('pauseTitle'))))
     );
   }
 
@@ -543,7 +551,7 @@
   };
   function showPause() {
     const p = player(), v = video();
-    if (!s.pauseInfo || !p || !v?.paused || v.ended || p.classList.contains('ad-showing')) return;
+    if (!s.pauseInfo || (s.pauseBlur === false && s.pauseTitle === false) || !p || !v?.paused || v.ended || p.classList.contains('ad-showing')) return;
     const r = p.getPlayerResponse?.() || {}, d = r.videoDetails || {}, mf = r.microformat?.playerMicroformatRenderer || {};
     const shown = shownTitle();
     const views = +d.viewCount ? new Intl.NumberFormat(undefined, { notation: 'compact' }).format(+d.viewCount) + ' views' : '';
