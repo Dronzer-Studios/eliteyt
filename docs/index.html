@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EliteYT</title>
+<meta name="description" content="EliteYT: a calmer, faster YouTube. Custom watch layout, Netflix-style home, pause screen, SponsorBlock, DeArrow and Return YouTube Dislike built in.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,500;8..144,800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#0f0f0f;--raised:#181818;--chip:#272727;--line:#3f3f3f;--fg:#f1f1f1;--fg2:#aaa;--red:#ff0033;
+  --display:"Roboto Flex",Roboto,system-ui,sans-serif;--mono:"Roboto Mono",ui-monospace,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Roboto,system-ui,sans-serif}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--chip)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{display:inline-flex;align-items:center;gap:8px;font:800 20px var(--display);text-decoration:none;letter-spacing:-.4px}
+.logo svg{width:30px;height:21px}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{font:500 14px Roboto;text-decoration:none;padding:6px 12px;border-radius:8px;background:var(--chip)}
+nav a:hover{background:#3f3f3f}
+.hero{padding:64px 0 32px;text-align:center}
+.hero h1{font:800 clamp(36px,6vw,68px)/1.05 var(--display);letter-spacing:-.02em;margin:0 0 14px}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p{color:var(--fg2);font-size:clamp(16px,2vw,20px);margin:0 auto 28px;max-width:680px}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:20px;font:500 15px Roboto;text-decoration:none}
+.btn.p{background:var(--fg);color:#0f0f0f}.btn.s{background:var(--chip)}
+.video{margin:36px auto 0;border-radius:16px;overflow:hidden;outline:1px solid var(--line);background:#000;aspect-ratio:16/9}
+.video video{width:100%;height:100%;display:block}
+section{padding:64px 0;border-top:1px solid var(--chip)}
+.eb{font:500 12px var(--mono);letter-spacing:.24em;color:var(--red);text-transform:uppercase;margin:0 0 8px}
+h2{font:800 clamp(26px,3.6vw,40px)/1.1 var(--display);letter-spacing:-.01em;margin:0 0 12px}
+.lead{color:var(--fg2);max-width:760px;margin:0 0 28px;font-size:17px}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:24px 0 0}
+.why div{background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:16px 18px}
+.why b{display:block;font:500 16px Roboto;margin-bottom:4px}
+.why span{color:var(--fg2);font-size:14px}
+/* before / after slider */
+.cmp{position:relative;border-radius:12px;overflow:hidden;outline:1px solid var(--line);aspect-ratio:16/9;user-select:none;touch-action:pan-y}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cmp .after{clip-path:inset(0 0 0 var(--x,50%))}
+.cmp .bar{position:absolute;top:0;bottom:0;left:var(--x,50%);width:3px;margin-left:-1.5px;background:var(--red);box-shadow:0 0 18px rgba(255,0,51,.6);pointer-events:none}
+.cmp .bar::after{content:"⟷";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-size:18px}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.cmp .t{position:absolute;top:12px;padding:3px 9px;border-radius:4px;font:500 11px var(--mono);letter-spacing:.2em;background:rgba(0,0,0,.75);pointer-events:none}
+.cmp .t.l{left:12px}.cmp .t.r{right:12px;background:var(--red)}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+figure{margin:0}
+figure img{width:100%;display:block;border-radius:12px;outline:1px solid var(--line)}
+figcaption{color:var(--fg2);font-size:14px;margin-top:8px}
+.rules{font:500 15px/2 var(--mono);background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:18px 22px;overflow-x:auto}
+.rules em{font-style:normal;color:var(--red)}
+ol.steps{padding-left:20px;color:var(--fg2)}ol.steps li{margin:6px 0}
+code{font:500 14px var(--mono);background:var(--chip);padding:2px 6px;border-radius:4px;color:var(--fg)}
+.by{font-size:14px;color:var(--fg2);margin:20px 0 0}.by a,.credit a{color:var(--fg)}.credit{color:var(--fg);font-size:16px;margin:0 0 10px}
+footer{padding:40px 0 60px;color:var(--fg2);font-size:14px;border-top:1px solid var(--chip)}
+@media (max-width:600px){nav{display:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#"><svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#ff0033"/><path d="M11 5.5v9l7.5-4.5z" fill="#fff"/></svg>EliteYT</a>
+  <nav><a href="#watch">Watch page</a><a href="#home">Home</a><a href="#community">SponsorBlock</a><a href="#battery">Battery</a><a href="#install">Install</a></nav>
+</div></header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>YouTube, <em>without the noise.</em></h1>
+    <p>EliteYT is a browser extension built to elevate your YouTube experience: a calmer home, comments beside the player, a pause screen that tells you what you're watching, and SponsorBlock, DeArrow and Return YouTube Dislike built in.</p>
+    <div class="btns"><a class="btn p" href="#install">Install</a><a class="btn s" href="#watch">See what changed</a><a class="btn s" href="https://github.com/Dronzer-Studios/eliteyt">GitHub</a></div>
+    <p class="by">Brought to you by <a href="https://github.com/Dronzer-Studios">Dronzer Studios</a>, creators of Thallium 81 &amp; hardware infrastructure.</p>
+    <div class="video"><video src="eliteyt-teaser.mp4" poster="img/after-watch.jpg" controls playsinline preload="metadata"></video></div>
+  </div>
+
+  <section id="watch">
+    <div class="eb">Watch page</div>
+    <h2>The video stays in view.</h2>
+    <p class="lead">Stock YouTube puts the title, channel and seven buttons under the video and fills the sidebar with thumbnails, so reading comments means scrolling the video away. Drag the slider to compare.</p>
+    <div class="cmp" style="--x:50%"><img src="img/before-watch.jpg" alt="Stock YouTube watch page"><img class="after" src="img/after-watch.jpg" alt="EliteYT watch page"><div class="bar"></div><span class="t l">YOUTUBE</span><span class="t r">ELITEYT</span><input type="range" min="0" max="100" value="50" aria-label="Compare before and after"></div>
+    <div class="why">
+      <div><b>Comments beside the player</b><span>The sidebar scrolls on its own, so you can read while you watch.</span></div>
+      <div><b>Comments · Description · Tweaks</b><span>One panel with YouTube-style chips. Clicking the description opens it there.</span></div>
+      <div><b>One row under the video</b><span>Channel, filter chips, likes and dislikes on a single line. Share, Save and Ask move into ⋯.</span></div>
+      <div><b>Recommendations as a grid</b><span>Under the player, like YouTube's experimental layout.</span></div>
+    </div>
+  </section>
+
+  <section id="player">
+    <div class="eb">On the player</div>
+    <h2>Pause, and know what you're watching.</h2>
+    <p class="lead">The title moved out of the sidebar and onto the video: it shows with the controls on hover, and pausing blurs the frame and shows the title, channel, views, date and description, like a streaming app.</p>
+    <div class="shots">
+      <figure><img src="img/pause.jpg" alt="Pause screen" loading="lazy"><figcaption>Pause screen, 2.5 s after pausing. Any mouse movement brings the controls back.</figcaption></figure>
+      <figure><img src="img/hover.jpg" alt="Title on the player" loading="lazy"><figcaption>Title and channel along the top of the player, fading with the controls.</figcaption></figure>
+      <figure><img src="img/tweaks.jpg" alt="Tweaks panel" loading="lazy"><figcaption>Tweaks: speed per channel, a separate speed for music, a never-change list, volume boost, and Stable Volume moved out of the ⚙ menu.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="home">
+    <div class="eb">Home</div>
+    <h2>A home that feels calm.</h2>
+    <p class="lead">Netflix-style rows in YouTube's own design language. The left sidebar is gone; Home, Subscriptions and You sit next to your avatar, and the filter chips only appear once you scroll.</p>
+    <div class="cmp" style="--x:50%"><img src="img/before-home.jpg" alt="Stock YouTube home"><img class="after" src="img/home-hero.jpg" alt="EliteYT home"><div class="bar"></div><span class="t l">YOUTUBE</span><span class="t r">ELITEYT</span><input type="range" min="0" max="100" value="50" aria-label="Compare before and after"></div>
+    <div class="why">
+      <div><b>Carousel</b><span>Your last video (resume where you stopped), then the newest upload from channels you watched recently.</span></div>
+      <div><b>Continue watching</b><span>Progress bar and time left; positions saved while you watch, plus your YouTube history.</span></div>
+      <div><b>From your subscriptions</b><span>Right under Continue watching, with a "New" badge on unwatched uploads from the last 48 hours.</span></div>
+      <div><b>Calm thumbnails</b><span>A real frame from the middle of the video instead of creator artwork. DeArrow's community thumbnails win when they exist.</span></div>
+    </div>
+    <div class="shots" style="margin-top:20px">
+      <figure><img src="img/home-rows.jpg" alt="Continue watching row" loading="lazy"><figcaption>Continue watching, then YouTube's recommendations with calm thumbnails.</figcaption></figure>
+      <figure><img src="img/home-grid.jpg" alt="Calm thumbnails grid" loading="lazy"><figcaption>Real frames instead of shouting thumbnails. Live streams keep theirs.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="community">
+    <div class="eb">Built in</div>
+    <h2>SponsorBlock, DeArrow, Return YouTube Dislike.</h2>
+    <p class="lead">Three community projects, wired in directly. SponsorBlock and DeArrow are asked by a 4-character hash prefix of the video ID, so they never learn exactly what you watch; Return YouTube Dislike needs the full ID.</p>
+    <div class="shots">
+      <figure><img src="img/sponsor.jpg" alt="Skipped sponsor" loading="lazy"><figcaption>Sponsor segments skipped with a toast, and coloured markers on the progress bar for every category.</figcaption></figure>
+    </div>
+    <div class="why">
+      <div><b>SponsorBlock</b><span>Skips sponsors, self-promo and reminders by default; intros, outros, filler and more are opt-in. Seek back into a segment and it plays.</span></div>
+      <div><b>DeArrow</b><span>Community titles and thumbnails. Hover a title to see the original.</span></div>
+      <div><b>Return YouTube Dislike</b><span>The dislike count is back, inside the dislike button.</span></div>
+      <div><b>Fast</b><span>Requests run in parallel, only for cards near the screen, and are cached across reloads.</span></div>
+    </div>
+  </section>
+
+  <section id="battery">
+    <div class="eb">Battery saver</div>
+    <h2>Easy on your battery.</h2>
+    <p class="lead">Watching fast doesn't need 1080p. While the laptop is unplugged, EliteYT lowers the quality as the speed rises and skips 60 fps streams.</p>
+    <div class="rules">speed ≥ 2.5×  <em>→</em>  480p<br>speed ≥ 1.75× <em>→</em>  720p<br>below 1.75×  <em>→</em>  1080p<br>60 fps        <em>→</em>  30 fps<br>Ambient mode  <em>→</em>  off</div>
+    <p class="lead" style="margin-top:18px">Speed keys: <code>[</code> slower, <code>]</code> faster, <code>\</code> reset. Speeds are remembered per channel; music channels keep their own.</p>
+  </section>
+
+  <section id="install">
+    <div class="eb">Install</div>
+    <h2>Load it in Chrome or Helium.</h2>
+    <ol class="steps">
+      <li>Download or clone <a href="https://github.com/Dronzer-Studios/eliteyt">the repository</a>: <code>git clone https://github.com/Dronzer-Studios/eliteyt</code></li>
+      <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
+      <li>Click <b>Load unpacked</b> and pick the repository folder.</li>
+      <li>Open YouTube. Settings live in the toolbar popup; the full page has the layout editor.</li>
+    </ol>
+  </section>
+</main>
+
+<footer><div class="wrap"><p class="credit">EliteYT is brought to you by <a href="https://github.com/Dronzer-Studios"><b>Dronzer Studios</b></a>, creators of <b>Thallium 81</b> &amp; hardware infrastructure.</p>EliteYT is not affiliated with YouTube or Google. SponsorBlock and DeArrow by Ajay Ramachandran; Return YouTube Dislike by its contributors.</div></footer>
+
+<script>
+for (const c of document.querySelectorAll('.cmp')) {
+  const r = c.querySelector('input');
+  r.addEventListener('input', () => c.style.setProperty('--x', r.value + '%'));
+}
+</script>
+</body>
+</html>
