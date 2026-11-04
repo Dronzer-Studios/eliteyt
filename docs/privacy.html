@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EliteYT Privacy</title>
+<meta name="description" content="What data the EliteYT browser extension sends, to whom, and why.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,800&family=Roboto:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#0f0f0f;--raised:#181818;--chip:#272727;--fg:#f1f1f1;--fg2:#aaa;--red:#ff0033;
+  --display:"Roboto Flex",Roboto,system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 Roboto,system-ui,sans-serif}
+a{color:inherit}
+main{max-width:720px;margin:0 auto;padding:48px 16px 80px}
+h1{font:800 40px/1.1 var(--display);letter-spacing:-.8px;margin:0 0 8px}
+h2{font:800 22px/1.25 var(--display);margin:40px 0 8px}
+.lede{color:var(--fg2);margin:0 0 24px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--chip)}
+th{color:var(--fg2);font-weight:500}
+.wrap{overflow-x:auto}
+.back{display:inline-block;margin-bottom:32px;color:var(--fg2);text-decoration:none}
+.back:hover{color:var(--fg)}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="./">← EliteYT</a>
+<h1>Privacy</h1>
+<p class="lede">Last updated 5 November 2026. EliteYT has no servers, no accounts, no analytics and no ads. Nothing is sent to its developers.</p>
+
+<h2>What stays in your browser</h2>
+<p>Your settings (layout, speeds, toggles) are saved with your browser's extension storage. If you are signed in to Chrome or Firefox sync, the browser syncs them between your devices. EliteYT never reads them anywhere else.</p>
+<p>The home page shelves (Continue watching, subscriptions, new uploads) are built from YouTube pages loaded with your own YouTube session, the same way YouTube's site loads them. That data stays between your browser and YouTube.</p>
+
+<h2>What is sent to third-party services</h2>
+<p>Three community services power the built-in features. Each only receives what is listed here, plus your IP address, which every web request reveals. Turning a feature off in settings stops its requests.</p>
+<div class="wrap">
+<table>
+<tr><th>Service</th><th>Feature</th><th>What it receives</th></tr>
+<tr><td><a href="https://sponsor.ajay.app/">SponsorBlock</a></td><td>Skipping sponsor segments</td><td>The first 4 characters of a SHA-256 hash of the video ID, so the service cannot tell which video you are watching. When a segment is skipped, that segment's ID is reported so its submitter gets credit.</td></tr>
+<tr><td><a href="https://dearrow.ajay.app/">DeArrow</a></td><td>Community titles and thumbnails</td><td>The same 4-character hash prefix for titles. For thumbnails, the video ID and a timestamp.</td></tr>
+<tr><td><a href="https://returnyoutubedislike.com/">Return YouTube Dislike</a></td><td>Dislike counts</td><td>The video ID.</td></tr>
+</table>
+</div>
+<p>No YouTube account details, cookies, watch history or search history are sent to any of them.</p>
+
+<h2>Permissions</h2>
+<p><strong>storage</strong> saves your settings. Access to <strong>youtube.com</strong> is needed to change the page. Access to the three service domains above lets the features fetch their data.</p>
+
+<h2>Contact</h2>
+<p>Questions or concerns: open an issue at <a href="https://github.com/Dronzer-Studios/eliteyt/issues">github.com/Dronzer-Studios/eliteyt</a>.</p>
+</main>
+</body>
+</html>
