@@ -18,7 +18,7 @@ const EYT_GROUPS = [
   ['Dislikes', [['ryd', 'Show dislike count (Return YouTube Dislike)']]],
   ['Home', [['homeShelves', 'Shelves: Continue watching, Subscriptions, Recommended'], ['homeClean', 'Clean home grid'], ['#homeCols', 'Home columns', 2, 8, 1],
     ['homeNoShorts', 'Hide Shorts on home'], ['homeNoAds', 'Hide ads, promos and topic shelves on home']]],
-  ['Look', [['topbar', 'EliteYT top bar: no left sidebar, Home / Subscriptions / You by the avatar'], ['expLayout', 'Custom watch layout'], ['descToPanel', 'Open description in the comments panel'], ['stats', 'Stats overlay'], ['pauseInfo', "Pause screen: show what you're watching"], ['titleInPlayer', 'Title on the player (hover) instead of the sidebar']]]
+  ['Look', [['topbar', 'EliteYT top bar: no left sidebar, Home / Subscriptions / You by the avatar'], ['expLayout', 'Custom watch layout'], ['descToPanel', 'Open description in the comments panel'], ['stats', 'Stats overlay'], ['pauseInfo', "Pause screen: show what you're watching"], ['pauseBlur', 'Pause screen: blur the video'], ['titleInPlayer', 'Title on the player (hover) instead of the sidebar']]]
 ];
 
 function eytBuildForm(form, s, skip = []) {

@@ -61,6 +61,7 @@
   const applyClasses = () => {
     const root = document.documentElement, L = s.layout || {};
     for (const [k, c] of Object.entries(CLS)) root.classList.toggle(c, !!s[k]);
+    root.classList.toggle('eyt-pause-noblur', s.pauseBlur === false);
     root.classList.toggle('eyt-side-left', L.side === 'left');
     root.classList.toggle('eyt-card-grid', (L.card || 'grid') === 'grid');
     root.style.setProperty('--eyt-side', (L.width || 400) + 'px');
@@ -317,7 +318,8 @@
         })()),
       h('div', { class: 'eyt-tw-sec' },
         row('Quality follows speed', sw(s.autoQuality, () => { set({ autoQuality: !s.autoQuality }); lastQ = ''; applyQuality(); renderTweaks(); })),
-        row('Ambient mode off', sw(s.noAmbient, () => { set({ noAmbient: !s.noAmbient }); applyClasses(); renderTweaks(); })))
+        row('Ambient mode off', sw(s.noAmbient, () => { set({ noAmbient: !s.noAmbient }); applyClasses(); renderTweaks(); })),
+        row('Blur video when paused', sw(s.pauseBlur !== false, () => { set({ pauseBlur: s.pauseBlur === false }); applyClasses(); renderTweaks(); })))
     );
   }
 
