@@ -37,7 +37,8 @@ const save = () => {
     const { tweaks: t, ...layout } = state;
     chrome.storage.sync.set({
       layout, defaultSpeed: t.speed, musicSeparate: t.musicSeparate, musicSpeed: t.musicSpeed,
-      exempt: t.exempt, volume: t.volume, autoQuality: t.autoQuality, noAmbient: t.noAmbient
+      exempt: t.exempt, volume: t.volume, autoQuality: t.autoQuality, noAmbient: t.noAmbient,
+      pauseBlur: t.pauseBlur, pauseTitle: t.pauseTitle
     }, () => flash('Saved'));
   }, 300);
 };
@@ -81,6 +82,8 @@ function renderTweaks() {
   tw('twVol').value = t.volume; tw('twVolV').textContent = t.volume + '%';
   tw('twQual').setAttribute('aria-checked', t.autoQuality);
   tw('twAmb').setAttribute('aria-checked', t.noAmbient);
+  tw('twBlur').setAttribute('aria-checked', t.pauseBlur);
+  tw('twTitle').setAttribute('aria-checked', t.pauseTitle);
 }
 const setT = (patch) => { Object.assign(state.tweaks, patch); render(); };
 const twPage = blocks.comments.querySelector('.tw');
@@ -97,6 +100,8 @@ twPage.addEventListener('click', (e) => {
   else if (b.id === 'twMusic') setT({ musicSeparate: !state.tweaks.musicSeparate });
   else if (b.id === 'twQual') setT({ autoQuality: !state.tweaks.autoQuality });
   else if (b.id === 'twAmb') setT({ noAmbient: !state.tweaks.noAmbient });
+  else if (b.id === 'twBlur') setT({ pauseBlur: !state.tweaks.pauseBlur });
+  else if (b.id === 'twTitle') setT({ pauseTitle: !state.tweaks.pauseTitle });
 });
 tw('twForm').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -148,13 +153,14 @@ $('#reset').onclick = () => { state = { ...structuredClone(PRESETS.experimental)
 let tt;
 const flash = (msg) => { $('#toast').textContent = msg; clearTimeout(tt); tt = setTimeout(() => { $('#toast').textContent = ''; }, 2000); };
 
-const SKIP = ['autoQuality', 'noAmbient', 'musicSeparate', 'defaultSpeed', 'musicSpeed', 'volume', 'exempt'];
+const SKIP = ['autoQuality', 'noAmbient', 'pauseBlur', 'pauseTitle', 'musicSeparate', 'defaultSpeed', 'musicSpeed', 'volume', 'exempt'];
 chrome.storage.sync.get(EYT_DEFAULTS, (s) => {
   const all = Object.keys(NAMES), L = s.layout;
   const ok = L && all.every((id) => [...L.main, ...L.sidebar, ...L.hidden].includes(id));
   state = { ...(ok ? L : structuredClone(PRESETS.experimental)),
     tweaks: { speed: s.defaultSpeed, musicSeparate: s.musicSeparate, musicSpeed: s.musicSpeed, exempt: s.exempt,
-      volume: s.volume, autoQuality: s.autoQuality, noAmbient: s.noAmbient } };
+      volume: s.volume, autoQuality: s.autoQuality, noAmbient: s.noAmbient,
+      pauseBlur: s.pauseBlur !== false, pauseTitle: s.pauseTitle !== false } };
   render();
   ready = true;
   eytBuildForm($('#form'), s, SKIP);
