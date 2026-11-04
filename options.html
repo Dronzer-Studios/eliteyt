@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EliteYT Layout Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+[hidden] { display: none !important; }
+/* Layout: tool bar on top, a mock watch page as the canvas, a "hidden" tray below. Blocks drag between three lists. */
+:root {
+  --bg: #f3f2f0; --surface: #ffffff; --sunk: #e9e7e4; --line: #d9d6d1;
+  --fg: #1b1a19; --muted: #6d6a65; --accent: #d4352b; --accent-soft: #fbe3e1; --skel: #e4e1dc; --skel-2: #d5d1cb;
+  --yt-chip: #0000000d; --yt-chip-hover: #0000001a; --yt-on-bg: #0f0f0f; --yt-on-fg: #ffffff; --yt-box: #0000000d; --yt-link: #065fd4; --yt-sub: #606060;
+  --yt: "Roboto", "Arial", sans-serif;
+  --ui: "Onest", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121212; --surface: #1c1b1b; --sunk: #0c0c0c; --line: #333130;
+  --fg: #f0eeeb; --muted: #9b9792; --accent: #ff5a4f; --accent-soft: #3a1c1a; --skel: #2c2a29; --skel-2: #3a3836;
+  --yt-chip: #ffffff1a; --yt-chip-hover: #ffffff33; --yt-on-bg: #f1f1f1; --yt-on-fg: #0f0f0f; --yt-box: #ffffff1a; --yt-link: #3ea6ff; --yt-sub: #aaaaaa; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121212; --surface: #1c1b1b; --sunk: #0c0c0c; --line: #333130;
+  --fg: #f0eeeb; --muted: #9b9792; --accent: #ff5a4f; --accent-soft: #3a1c1a; --skel: #2c2a29; --skel-2: #3a3836;
+  --yt-chip: #ffffff1a; --yt-chip-hover: #ffffff33; --yt-on-bg: #f1f1f1; --yt-on-fg: #0f0f0f; --yt-box: #ffffff1a; --yt-link: #3ea6ff; --yt-sub: #aaaaaa; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.45 var(--ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+h1 span { color: var(--accent); }
+.lede { margin: 0; color: var(--muted); }
+
+.bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.group { display: flex; align-items: center; gap: 8px; }
+.group > .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--fg); font: 500 13px var(--ui); padding: 6px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+input[type=range] { accent-color: var(--accent); width: 120px; }
+.val { font: 12px var(--mono); color: var(--muted); min-width: 44px; font-variant-numeric: tabular-nums; }
+button:focus-visible, input:focus-visible, .block:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.spacer { flex: 1; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 8px; padding: 6px 12px; font: 500 13px var(--ui); cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* mock browser */
+.window { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.chrome { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.logo { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.logo i { width: 22px; height: 15px; border-radius: 4px; background: var(--accent); position: relative; }
+.logo i::after { content: ""; position: absolute; left: 8px; top: 4px; border-left: 7px solid #fff; border-block: 3.5px solid transparent; }
+.search { flex: 1; max-width: 420px; height: 30px; border: 1px solid var(--line); border-radius: 15px; margin: 0 auto; }
+.dot { width: 26px; height: 26px; border-radius: 50%; background: var(--skel); }
+
+.page { display: grid; grid-template-columns: minmax(0, 1fr) var(--side, 400px); gap: 20px; padding: 16px; align-items: start; }
+.page.left { grid-template-columns: var(--side, 400px) minmax(0, 1fr); }
+.page.left .col.side { order: -1; }
+.col { display: flex; flex-direction: column; gap: 12px; min-height: 160px; min-width: 0; padding: 6px; border: 1.5px dashed transparent; border-radius: 10px; transition: border-color .15s; }
+.dragging .col, .dragging .tray-list { border-color: var(--line); }
+.col-tag { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 -4px 6px; }
+
+/* blocks */
+.block { position: relative; border-radius: 10px; padding: 10px; background: var(--surface); outline: 1px solid transparent; cursor: grab; touch-action: none; }
+.block:hover { outline-color: var(--line); }
+.block .tag { position: absolute; top: 6px; right: 6px; font: 500 10px var(--mono); padding: 2px 6px; border-radius: 4px;
+  background: var(--accent-soft); color: var(--accent); opacity: 0; transition: opacity .15s; pointer-events: none; }
+.block:hover .tag, .block:focus-visible .tag { opacity: 1; }
+.block .x { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; opacity: 0; }
+.block:hover .x, .block:focus-within .x { opacity: 1; }
+.sortable-ghost { opacity: .35; }
+.sortable-chosen { outline: 2px solid var(--accent) !important; cursor: grabbing; }
+
+.sk { display: block; height: 10px; border-radius: 5px; background: var(--skel); }
+.sk.d { background: var(--skel-2); }
+.row { display: flex; align-items: center; gap: 10px; }
+.av { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--skel-2); }
+.av.s { width: 24px; height: 24px; }
+.pill { flex: none; height: 32px; border-radius: 16px; background: var(--skel); display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; font-size: 12px; color: var(--muted); }
+.pill.round { width: 32px; padding: 0; }
+.pill.dark { background: var(--fg); color: var(--surface); font-weight: 600; }
+
+.player { aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; background: #0d0d0d; position: relative; overflow: hidden; }
+.player::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 30% 40%, #3b3631, #0d0d0d 70%); }
+.player .prog { position: absolute; left: 12px; right: 12px; bottom: 34px; height: 3px; background: #ffffff40; }
+.player .prog::before { content: ""; position: absolute; inset: 0 70% 0 0; background: var(--accent); }
+.player .ctl { position: absolute; left: 12px; bottom: 10px; font: 11px var(--mono); color: #ffffffb0; }
+.player .play { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 56px; height: 40px; border-radius: 10px; background: #ffffff20; }
+.player .play::after { content: ""; position: absolute; left: 23px; top: 12px; border-left: 14px solid #fff; border-block: 8px solid transparent; }
+
+.title { font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; margin: 0; }
+.meta { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+.desc p { margin: 6px 0 0; font-size: 13px; }
+.desc b { font-size: 13px; }
+/* YouTube design language inside the mock page: Roboto, 12px description box, 8px chips, blue timestamps */
+.page { font-family: var(--yt); }
+.page .title { font-family: var(--yt); font-size: 20px; line-height: 28px; }
+.desc-btn { display: block; width: 100%; text-align: left; border: 0; border-radius: 12px; padding: 12px;
+  background: var(--yt-box); color: inherit; font: 400 14px/20px var(--yt); cursor: pointer; }
+.desc-btn:hover { background: var(--yt-chip-hover); }
+.desc-btn b { display: none; }
+.desc-btn p { margin: 0; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.desc-btn p::before { content: "812K views  3 days ago  "; font-weight: 500; white-space: pre; }
+.desc-btn .more { display: inline; font: 500 14px var(--yt); color: var(--fg); }
+.tabs { display: flex; gap: 12px; margin-bottom: 16px; }
+.tabs button { border: 0; border-radius: 8px; height: 32px; padding: 0 12px; background: var(--yt-chip); color: var(--fg);
+  font: 500 14px/32px var(--yt); cursor: pointer; }
+.tabs button:hover { background: var(--yt-chip-hover); }
+.tabs button[aria-selected="true"] { background: var(--yt-on-bg); color: var(--yt-on-fg); }
+.pg { font: 400 14px/20px var(--yt); }
+.pg p { margin: 0 0 12px; }
+.pg .meta { color: var(--fg); font-weight: 500; font-size: 14px; }
+.pg .ts { color: var(--yt-link); font-weight: 400; }
+.pg .chap { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; margin: 4px 0 12px; }
+.pg-desc { border-radius: 12px; background: var(--yt-box); padding: 12px; }
+.cm-head { font-family: var(--yt); }
+.cm-head b { font-size: 20px; font-weight: 700; }
+.cm-head span { font-size: 14px; font-weight: 500; color: var(--fg); }
+.cm small { color: var(--yt-sub); font-family: var(--yt); }
+.cm small b { color: var(--fg); font-weight: 500; }
+/* tweaks page: YouTube settings vocabulary (switches, red sliders, chips) */
+.tw { display: grid; gap: 4px; cursor: default; }
+.tw-sec { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.tw-sec:last-child { border-bottom: 0; }
+.tw-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+.tw-row label { font: 500 14px var(--yt); }
+.tw-val { font: 500 14px var(--yt); color: var(--yt-sub); font-variant-numeric: tabular-nums; }
+.tw input[type=range] { width: 100%; accent-color: #ff0033; }
+.tw-hint { margin: 0 !important; font-size: 12px; color: var(--yt-sub); }
+.tw kbd { font: 500 11px var(--mono); padding: 1px 5px; border-radius: 4px; background: var(--yt-chip); }
+.tw-chips, .tw-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.tw-chips button, .tw-list span { border: 0; border-radius: 8px; height: 32px; padding: 0 12px; background: var(--yt-chip); color: var(--fg);
+  font: 500 14px/32px var(--yt); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tw-chips button[aria-pressed="true"] { background: var(--yt-on-bg); color: var(--yt-on-fg); }
+.tw-list span { cursor: default; }
+.tw-list span button { border: 0; background: none; color: var(--yt-sub); font-size: 14px; cursor: pointer; padding: 0 0 0 2px; }
+.tw-list:empty::before { content: "No channels yet"; font-size: 13px; color: var(--yt-sub); }
+.tw-add { display: flex; gap: 8px; }
+.tw-add input { flex: 1; min-width: 0; height: 36px; border: 1px solid var(--line); border-radius: 18px; padding: 0 14px; background: var(--surface); color: var(--fg); font: 14px var(--yt); }
+.tw-add button { border: 0; border-radius: 18px; height: 36px; padding: 0 16px; background: var(--yt-on-bg); color: var(--yt-on-fg); font: 500 14px var(--yt); cursor: pointer; }
+.sw { flex: none; position: relative; width: 36px; height: 14px; border: 0; border-radius: 7px; background: var(--skel-2); cursor: pointer; padding: 0; }
+.sw::after { content: ""; position: absolute; top: -3px; left: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px #0005; transition: left .15s; }
+.sw[aria-checked="true"] { background: #ff003366; }
+.sw[aria-checked="true"]::after { left: 18px; background: #ff0033; }
+.tw-dim { opacity: .45; pointer-events: none; }
+.flash-panel { outline: 2px solid var(--accent) !important; }
+.ch b { display: block; font-size: 14px; }
+.ch small { color: var(--muted); font-size: 12px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.merch .items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.merch .items div { aspect-ratio: 1; border-radius: 8px; background: var(--skel); }
+.merch .items span { font: 12px var(--mono); }
+
+.cm-head { display: flex; gap: 16px; align-items: center; font-size: 14px; }
+.cm-head b { flex: 1; }
+.cm-head span { font-size: 12px; color: var(--muted); }
+.cm { display: flex; gap: 10px; margin-top: 12px; }
+.cm > div { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.cm small { font-size: 12px; color: var(--muted); }
+
+.recs .grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 16px 12px; }
+.card .th { aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; position: relative; }
+.card .th em { position: absolute; right: 6px; bottom: 6px; font: 500 10px var(--mono); font-style: normal; background: #000c; color: #fff; padding: 1px 4px; border-radius: 3px; }
+.card .info { display: flex; gap: 8px; margin-top: 8px; }
+.card .info > div { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.card b { font-size: 13px; line-height: 1.3; }
+.card small { font-size: 11px; color: var(--muted); }
+.recs.list .grid { grid-template-columns: 1fr; gap: 10px; }
+.recs.list .card { display: grid; grid-template-columns: 42% 1fr; gap: 10px; }
+.recs.list .card .info { margin-top: 0; }
+.recs.list .card .av { display: none; }
+
+.chat .box { height: 120px; border-radius: 8px; background: var(--sunk); display: grid; gap: 6px; padding: 10px; align-content: start; }
+
+/* tray */
+.tray { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
+.tray h2 { margin: 0; font-size: 13px; font-weight: 600; }
+.tray p { margin: 0; color: var(--muted); font-size: 12px; }
+.tray-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 6px; border: 1.5px dashed var(--line); border-radius: 10px; }
+.tray-list .block { padding: 0; background: none; }
+.tray-list .block > :not(.chip) { display: none; }
+.chip { display: none; }
+.tray-list .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: var(--sunk); font-weight: 500; font-size: 13px; }
+.tray-list .chip::before { content: "+"; color: var(--accent); font-weight: 700; }
+
+/* export */
+.out { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
+.out .row { justify-content: space-between; flex-wrap: wrap; }
+.out h2 { margin: 0; font-size: 13px; font-weight: 600; }
+textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--fg); font: 12px/1.5 var(--mono); padding: 10px; }
+.toast { font-size: 12px; color: var(--accent); }
+
+@media (max-width: 760px) {
+  .page, .page.left { grid-template-columns: minmax(0, 1fr); }
+  .page.left .col.side { order: 0; }
+  .recs .grid { grid-template-columns: repeat(min(var(--cols, 3), 2), minmax(0, 1fr)); }
+  .search { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.block[data-id="player"] .x { display: none; }
+.settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 24px; }
+.settings h2 { margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.settings label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+.settings label.stack { flex-direction: column; align-items: stretch; gap: 6px; }
+.settings input[type=checkbox] { accent-color: var(--accent); }
+.settings input[type=number] { width: 64px; margin-left: auto; background: var(--sunk); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+.settings textarea { min-height: 70px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Elite<span>YT</span> Layout Studio</h1>
+    <p class="lede">Drag blocks between the columns to arrange the watch page. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="Layout controls">
+    <div class="group"><span class="lab">Preset</span>
+      <div class="seg" id="presets">
+        <button type="button" data-preset="experimental">Experimental</button>
+        <button type="button" data-preset="classic">Classic</button>
+        <button type="button" data-preset="focus">Focus</button>
+      </div>
+    </div>
+    <div class="group"><span class="lab">Sidebar</span>
+      <div class="seg" id="sidePos">
+        <button type="button" data-side="left">Left</button>
+        <button type="button" data-side="right">Right</button>
+      </div>
+    </div>
+    <div class="group"><label class="lab" for="sideW">Width</label>
+      <input id="sideW" type="range" min="300" max="560" step="10"><span class="val" id="sideWv"></span>
+    </div>
+    <div class="group"><label class="lab" for="cols">Video columns</label>
+      <input id="cols" type="range" min="1" max="5" step="1"><span class="val" id="colsv"></span>
+    </div>
+    <div class="group"><span class="lab">Cards</span>
+      <div class="seg" id="cardStyle">
+        <button type="button" data-card="grid">Grid</button>
+        <button type="button" data-card="list">List</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="window">
+    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
+    <div class="page" id="page">
+      <div class="col main" id="main" aria-label="Main column"></div>
+      <div class="col side" id="side" aria-label="Sidebar"></div>
+    </div>
+  </div>
+
+  <section class="tray">
+    <h2>Hidden</h2>
+    <p>Blocks here won't show on the watch page. Drag one back to show it.</p>
+    <div class="tray-list" id="hidden" aria-label="Hidden blocks"></div>
+  </section>
+
+  <section class="out">
+    <div class="row"><h2>All settings</h2><span class="toast" id="toast" aria-live="polite"></span>
+      <button type="button" class="btn" id="reset">Reset layout</button></div>
+    <div id="form" class="settings"></div>
+  </section>
+</div>
+
+<template id="tpl">
+  <div class="block" data-id="player"><span class="chip">Player</span><div class="player"><span class="play"></span><span class="prog"></span><span class="ctl">0:42 / 13:31</span></div></div>
+  <div class="block" data-id="title"><span class="chip">Title</span><h3 class="title">Restoring a 1978 film camera with a broken shutter</h3><p class="meta">812,440 views · 3 days ago</p></div>
+  <div class="block desc" data-id="description"><span class="chip">Description</span><button type="button" class="desc-btn" aria-controls="cm-panel"><b>Description</b><p>A full teardown of a seized leaf shutter, from cleaning the blades to re-timing at 1/500 s.</p> <span class="more">...more</span></button></div>
+  <div class="block ch" data-id="channel"><span class="chip">Channel</span><div class="row"><span class="av"></span><div style="flex:1;min-width:0"><b>Bench &amp; Lens</b><small>1.2M subscribers</small></div><span class="pill round">🔔</span></div></div>
+  <div class="block acts-b" data-id="actions"><span class="chip">Actions</span><div class="acts"><span class="pill">👍 41K</span><span class="pill round">👎</span><span class="pill round">↗</span><span class="pill round">✂</span><span class="pill round">＋</span><span class="pill round">⋯</span></div></div>
+  <div class="block merch" data-id="merch"><span class="chip">Merch shelf</span><b>Shop the store</b><div class="items"><div></div><div></div><div></div><div></div></div></div>
+  <div class="block" data-id="comments" id="cm-panel"><span class="chip">Comments</span>
+    <div class="tabs" role="tablist" aria-label="Comments panel pages">
+      <button type="button" role="tab" data-page="comments" aria-selected="true">Comments</button>
+      <button type="button" role="tab" data-page="description" aria-selected="false">Description</button>
+      <button type="button" role="tab" data-page="tweaks" aria-selected="false">Tweaks</button>
+    </div>
+    <div class="pg tw" data-pg="tweaks" hidden>
+      <div class="tw-sec">
+        <div class="tw-row"><label for="twSpeed">Speed</label><span class="tw-val" id="twSpeedV"></span></div>
+        <input type="range" id="twSpeed" min="0.25" max="4" step="0.25">
+        <div class="tw-chips" id="twSpeedChips"></div>
+        <p class="tw-hint">Applies to normal channels. Keys: <kbd>[</kbd> <kbd>]</kbd> <kbd>\</kbd></p>
+      </div>
+      <div class="tw-sec">
+        <div class="tw-row"><label for="twMusic">Separate speed for music</label><button type="button" class="sw" id="twMusic" role="switch"></button></div>
+        <p class="tw-hint">Detects "- Topic" and VEVO channels and videos in the Music category.</p>
+        <div class="tw-row" id="twMusicRow"><label for="twMusicSpeed">Music speed</label><span class="tw-val" id="twMusicSpeedV"></span></div>
+        <input type="range" id="twMusicSpeed" min="0.5" max="2" step="0.05">
+      </div>
+      <div class="tw-sec">
+        <div class="tw-row"><label for="twAdd">Never change speed for</label></div>
+        <div class="tw-list" id="twList"></div>
+        <form class="tw-add" id="twForm"><input id="twAdd" placeholder="Channel name" autocomplete="off"><button type="submit">Add</button></form>
+      </div>
+      <div class="tw-sec">
+        <div class="tw-row"><label for="twVol">Volume boost</label><span class="tw-val" id="twVolV"></span></div>
+        <input type="range" id="twVol" min="100" max="300" step="10">
+      </div>
+      <div class="tw-sec">
+        <div class="tw-row"><label for="twQual">Quality follows speed</label><button type="button" class="sw" id="twQual" role="switch"></button></div>
+        <div class="tw-row"><label for="twAmb">Ambient mode off</label><button type="button" class="sw" id="twAmb" role="switch"></button></div>
+      </div>
+    </div>
+    <div class="pg" data-pg="description" hidden><div class="pg-desc">
+      <p class="meta">812,440 views  Nov 1, 2026</p>
+      <p>A full teardown of a seized leaf shutter, from cleaning the blades to re-timing at 1/500 s.</p>
+      <p>Parts: naphtha, lens spanner, 0.8 mm screwdriver, blower.</p>
+      <p class="meta">Chapters</p>
+      <div class="chap"><span class="ts">0:00</span><span>Intro</span><span class="ts">1:12</span><span>Removing the front element</span><span class="ts">4:30</span><span>Freeing the blades</span><span class="ts">9:05</span><span>Timing test</span><span class="ts">12:40</span><span>First roll</span></div>
+      <p class="meta">Show less</p>
+    </div></div>
+    <div class="pg" data-pg="comments">
+    <div class="cm-head"><b>2,318 Comments</b><span>Sort by</span><span>Expand</span></div>
+    <div class="cm"><span class="av s"></span><div><span class="sk" style="width:40%"></span></div></div>
+    <div class="cm"><span class="av s"></span><div><small><b>@darkroom_dan</b> 2 days ago</small><span class="sk" style="width:95%"></span><span class="sk" style="width:80%"></span></div></div>
+    <div class="cm"><span class="av s"></span><div><small><b>@f8andbethere</b> 1 day ago</small><span class="sk" style="width:90%"></span><span class="sk" style="width:55%"></span></div></div>
+    </div>
+  </div>
+  <div class="block recs" data-id="recommendations"><span class="chip">Recommendations</span><div class="grid"></div></div>
+  <div class="block chat" data-id="chat"><span class="chip">Live chat</span><b>Live chat</b><div class="box"><span class="sk" style="width:70%"></span><span class="sk" style="width:50%"></span><span class="sk" style="width:80%"></span></div></div>
+</template>
+
+<script src="vendor/Sortable.min.js"></script>
+<script src="src/defaults.js"></script>
+<script src="src/settings-form.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
