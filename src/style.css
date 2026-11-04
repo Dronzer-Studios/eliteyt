@@ -307,6 +307,7 @@ html[dark].eyt-home ytd-browse[page-subtype="home"] ytd-feed-filter-chip-bar-ren
 /* pause screen: blur the paused frame behind the info */
 .eyt-pause { backdrop-filter: blur(0); transition: opacity .5s ease, backdrop-filter .6s ease; }
 .eyt-pause.on { backdrop-filter: blur(14px) saturate(.9); }
+.eyt-pause-noblur .eyt-pause.on { backdrop-filter: none; }
 /* title bar across the top of the player, follows the controls */
 .eyt-ptop { position: absolute; top: 0; left: 0; right: 0; z-index: 24; pointer-events: none; padding: 18px 24px 48px;
   background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,0) 100%); color: #fff; transition: opacity .25s ease; }
