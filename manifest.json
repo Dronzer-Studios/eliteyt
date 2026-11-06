@@ -15,7 +15,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["src/defaults.js", "src/bridge.js"],
+      "js": ["src/defaults.js", "src/profiles.js", "src/bridge.js"],
       "css": ["src/style.css"],
       "run_at": "document_start"
     },

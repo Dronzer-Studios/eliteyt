@@ -28,7 +28,7 @@
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font: 14px/1.45 var(--ui);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
-.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 
 header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
 h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
@@ -37,7 +37,7 @@ h1 span { color: var(--accent); }
 
 .bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 12px 14px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.group { display: flex; align-items: center; gap: 8px; }
+.group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
 .group > .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .seg button { border: 0; background: transparent; color: var(--fg); font: 500 13px var(--ui); padding: 6px 10px; cursor: pointer; }
@@ -192,7 +192,29 @@ button:focus-visible, input:focus-visible, .block:focus-visible { outline: 2px s
 .tray-list .chip::before { content: "+"; color: var(--accent); font-weight: 700; }
 
 /* page switch + mock home page */
-body:not(.view-home) .home-only, body.view-home .watch-only { display: none !important; }
+body:not(.view-watch) .watch-only, body:not(.view-home) .home-only, body:not(.view-stack) .stack-only, body:not(.view-pages) .pages-only { display: none !important; }
+/* narrow-window mock */
+.stack-page { padding: 16px; max-width: 560px; margin: 0 auto; font-family: var(--yt); }
+.stack-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; color: var(--muted); font: 12px var(--ui); margin: 0 6px 8px; }
+.stack-head .row { gap: 8px; color: var(--fg); }
+/* other pages */
+.pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.pg-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.pg-card h3 { margin: 0 0 4px; font-size: 15px; }
+.pg-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; }
+.pg-row input[type=range] { flex: 1; }
+.pg-hint { margin: 4px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+/* profile options */
+.prof-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.prof-panel summary { cursor: pointer; font-weight: 500; }
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 24px; margin-top: 12px; }
+.prof-grid .chk { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.prof-grid .chk input { accent-color: var(--accent); margin-top: 3px; }
+.prof-grid .stack-l { display: block; margin: 10px 0 4px; }
+.prof-grid textarea { min-height: 64px; }
+.prof-grid .row { gap: 8px; flex-wrap: wrap; }
+.hint { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+#undo:disabled, #redo:disabled { color: var(--muted); cursor: default; }
 .home-page { padding: 16px; font-family: var(--yt); }
 .home-page .col { min-height: 120px; }
 .block > .x, .block > .tag { z-index: 2; } /* keep hide buttons above positioned mocks (carousel, player) */
@@ -245,7 +267,7 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
 <div class="wrap">
   <header class="top">
     <h1>Elite<span>YT</span> Layout Studio</h1>
-    <p class="lede">Drag blocks to arrange the watch page or the home page. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
+    <p class="lede">Drag blocks to arrange the watch page (wide and narrow), the home page, and choose what other pages show. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
   </header>
 
   <div class="bar" role="toolbar" aria-label="Layout controls">
@@ -265,7 +287,9 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
     <div class="group"><span class="lab">Page</span>
       <div class="seg" id="pageSel">
         <button type="button" data-view="watch">Watch</button>
+        <button type="button" data-view="stack" title="Narrow windows and theater mode">Narrow</button>
         <button type="button" data-view="home">Home</button>
+        <button type="button" data-view="pages" title="Subscriptions, search and channel pages">Pages</button>
       </div>
     </div>
     <div class="group watch-only"><span class="lab">Preset</span>
@@ -293,7 +317,34 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
         <button type="button" data-card="list">List</button>
       </div>
     </div>
+    <div class="spacer"></div>
+    <div class="group"><div class="seg">
+      <button type="button" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button>
+      <button type="button" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷ Redo</button>
+    </div></div>
   </div>
+
+  <details class="prof-panel" id="profPanel">
+    <summary>Profile options for <b id="profName2"></b></summary>
+    <div class="prof-grid">
+      <div>
+        <label class="chk"><input type="checkbox" id="profSettings"> Also save playback, SponsorBlock, filter and clean-UI settings with this profile</label>
+        <p class="hint">Off: this profile only changes layouts and uses the shared settings. On: speed, volume, SponsorBlock categories, the ad blocker and AI filter, and the Clean UI switches are kept per profile.</p>
+      </div>
+      <div>
+        <label class="chk"><input type="checkbox" id="profMusic"> Switch to this profile automatically for music videos</label>
+        <label class="stack-l" for="profChannels">…and for these channels (one per line)</label>
+        <textarea id="profChannels" rows="3" placeholder="Channel name"></textarea>
+        <p class="hint">Automatic switching changes only the tab playing that video, and switches back when you leave it.</p>
+      </div>
+      <div>
+        <div class="row"><button type="button" class="btn" id="profExport">Export all profiles</button>
+          <button type="button" class="btn" id="profImport">Import…</button></div>
+        <input type="file" id="profFile" accept="application/json,.json" hidden>
+        <p class="hint">A JSON file you can back up or share. Imported profiles are added next to yours; a name that's taken gets a number.</p>
+      </div>
+    </div>
+  </details>
 
   <div class="window watch-only">
     <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
@@ -321,6 +372,25 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
     <p>Sections here won't show on the home page. Drag or click one to bring it back. Recommended is YouTube's endless feed, so it always stays last.
       These sections need <b>Shelves</b> (under Home in All settings) switched on.</p>
     <div class="tray-list" id="homeHidden" aria-label="Hidden home sections"></div>
+  </section>
+
+  <div class="window stack-only">
+    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
+    <div class="stack-page">
+      <div class="stack-head"><span>Used when the window is too narrow for two columns</span>
+        <span class="row"><span id="stackTheaterL">Also in theater mode</span><button type="button" class="sw" role="switch" id="stackTheater" aria-labelledby="stackTheaterL"></button></span></div>
+      <div class="col" id="stackMain" aria-label="Narrow window: blocks top to bottom"></div>
+    </div>
+  </div>
+
+  <section class="tray stack-only">
+    <h2>Hidden in narrow windows</h2>
+    <p>Blocks here won't show when the watch page is a single column. Drag or click one to bring it back.</p>
+    <div class="tray-list" id="stackHidden" aria-label="Hidden in narrow windows"></div>
+  </section>
+
+  <section class="pages-only pages-wrap">
+    <div id="pagesGrid" class="pages-grid"></div>
   </section>
 
   <section class="out">
@@ -401,6 +471,7 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
 <script src="vendor/Sortable.min.js"></script>
 <script src="src/defaults.js"></script>
 <script src="src/settings-form.js"></script>
+<script src="src/profiles.js"></script>
 <script src="options.js"></script>
 </body>
 </html>
