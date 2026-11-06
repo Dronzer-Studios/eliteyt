@@ -3,6 +3,7 @@ const EYT_DEFAULTS = {
   speed: true, rememberSpeed: true, maxSpeed: 4, defaultSpeed: 1,
   musicSeparate: true, musicSpeed: 1, exempt: [], volume: 100, moveAudio: true,
   hideShorts: false, hideComments: false, hideRelated: false, hideEndCards: true, hideChat: false,
+  adBlock: true, aiFilter: true, lowEffort: true, slopHide: false, slopStrict: false, slopAllow: [], slopBlock: [],
   sponsorBlock: true, sbSponsor: true, sbSelfpromo: true, sbInteraction: true, sbIntro: false, sbOutro: false,
   sbPreview: false, sbFiller: false, sbMusic: false, deArrow: true, daThumbs: true, ryd: true,
   homeShelves: true, topbar: true, calmThumbs: true, homeClean: true, homeCols: 4, homeNoShorts: true, homeNoAds: true,

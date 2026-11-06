@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "EliteYT",
   "version": "0.2.0",
-  "description": "Battery saver, speed controls, SponsorBlock, DeArrow, Return YouTube Dislike, clean UI, stats and the experimental watch layout for YouTube.",
+  "description": "YouTube ad blocker, AI and low-effort video filter, SponsorBlock, DeArrow, dislikes, speed controls, battery saver, custom layouts.",
   "browser_specific_settings": {
     "gecko": { "id": "eliteyt@dronzer-studios", "strict_min_version": "140.0",
       "data_collection_permissions": { "required": ["browsingActivity"] } },
@@ -21,7 +21,7 @@
     },
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["src/main.js", "src/sponsor.js", "src/home.js"],
+      "js": ["src/adblock.js", "src/main.js", "src/sponsor.js", "src/home.js", "src/slop.js"],
       "run_at": "document_start",
       "world": "MAIN"
     }

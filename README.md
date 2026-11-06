@@ -1,6 +1,6 @@
 # EliteYT
 
-> A Chrome / Helium / Firefox extension that rearranges YouTube around the video: calmer home, comments beside the player, pause screen, SponsorBlock, DeArrow and Return YouTube Dislike built in.
+> A Chrome / Helium / Firefox extension that rearranges YouTube around the video: calmer home, comments beside the player, pause screen, its own ad blocker, an AI / low-effort video filter, SponsorBlock, DeArrow and Return YouTube Dislike built in.
 
 **Site & teaser:** https://dronzer-studios.github.io/eliteyt/
 
@@ -9,6 +9,8 @@
 - **Watch page:** the sidebar becomes a Comments / Description / Tweaks panel that scrolls on its own; channel, filter chips and likes share one row under the video; recommendations become a grid.
 - **On the player:** the title shows with the controls on hover; pausing blurs the frame and shows the title, channel, views, date and description.
 - **Home:** carousel (last video, then new uploads from recently watched channels), Continue watching, From your subscriptions, a "New" badge, calm thumbnails (real video frames instead of creator artwork). No left sidebar; Home / Subscriptions / You sit by the avatar.
+- **Ad blocker:** EliteYT's own, YouTube only. It strips ads from YouTube's data before the player sees them (video ads, feed, sidebar and search ads, promo banners), hides any ad slot that still renders, and if an ad plays anyway, mutes it, runs it at 16× and presses Skip.
+- **AI & low-effort filter:** flags videos the creator disclosed as altered or synthetic, videos that label themselves AI-made ("AI generated", #aivideo, "made with Sora"), and low-effort formats (TTS reddit stories, clickbait templates, hashtag and emoji spam). Flagged cards are blurred with the reason and a **Show** button (or hidden), and a flagged video gets a cover with **Watch anyway** / **Always allow channel**. It's heuristic and runs entirely in the browser: reviews and news *about* AI aren't flagged, a strict mode catches more, and channels can be allow- or block-listed.
 - **Built in:** SponsorBlock (skips + progress-bar markers), DeArrow (community titles and thumbnails), Return YouTube Dislike.
 - **Speed:** `[` `]` `\` keys, speed remembered per channel, separate speed for music, a never-change list.
 - **Battery saver (unplugged):** ≥2.5× plays at 480p, ≥1.75× at 720p, 60 fps streams skipped, ambient mode off.
@@ -57,6 +59,8 @@ Settings live in the toolbar popup; **Open full settings** has the drag-and-drop
 | `src/main.js` | main | player API: speed, quality, volume, layout, comments panel, pause screen |
 | `src/sponsor.js` | main | SponsorBlock, DeArrow, Return YouTube Dislike, calm thumbnails |
 | `src/home.js` | main | home shelves, carousel, top bar |
+| `src/adblock.js` | main | ad blocker: prunes ads from player/feed JSON, skips ads that still play |
+| `src/slop.js` | main | AI-generated / low-effort video filter (feed cards + watch page) |
 | `docs/` | — | GitHub Pages site and teaser video |
 
 SponsorBlock and DeArrow are queried by a 4-character SHA-256 prefix of the video ID; Return YouTube Dislike needs the full ID.
