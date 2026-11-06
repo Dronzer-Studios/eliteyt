@@ -41,6 +41,10 @@ npx web-ext build                # zip in web-ext-artifacts/, ready for AMO
 
 Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Switch its **Page** control to **Home** to reorder or hide the home sections (carousel, Continue watching, From your subscriptions, Recommended). Every feature can be switched off there.
 
+**Profiles** keep several layouts (watch + home) side by side: **New** saves the current layout under a name, edits go into the selected profile, and the toolbar popup can switch between them from any tab. Speed, volume and the other settings are shared by all profiles.
+
+![Layout Studio profile controls](docs/img/studio-profiles.jpg)
+
 | Watch page: title above the player | Home page: all sections | Home page: carousel and Continue watching hidden |
 |---|---|---|
 | ![Layout Studio, watch page with the title above the player](docs/img/studio-watch-title-above.jpg) | ![Layout Studio, home page sections](docs/img/studio-home.jpg) | ![Layout Studio, home page with two sections hidden](docs/img/studio-home-hidden.jpg) |

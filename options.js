@@ -59,7 +59,7 @@ for (const [id, pct] of [['continue', [72, 35, 88, 20]], ['subs', [0, 0, 0, 0]]]
 homeBlocks.recommended.querySelector('.grid').append(...[...grid.children].map((c) => c.cloneNode(true)));
 homeBlocks.recommended.style.setProperty('--cols', 4);
 
-let state, home;
+let state, home, profiles = [], active = '';
 // persist to chrome.storage.sync (debounced: sync storage allows ~120 writes/min)
 let saveTimer = 0, ready = false;
 const save = () => {
@@ -67,11 +67,14 @@ const save = () => {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const { tweaks: t, ...layout } = state;
+    // every edit also updates the active profile
+    profiles = profiles.map((p) => p.name === active ? { name: p.name, layout, homeLayout: home } : p);
     chrome.storage.sync.set({
       layout, defaultSpeed: t.speed, musicSeparate: t.musicSeparate, musicSpeed: t.musicSpeed,
       exempt: t.exempt, volume: t.volume, autoQuality: t.autoQuality, noAmbient: t.noAmbient,
-      pauseBlur: t.pauseBlur, pauseTitle: t.pauseTitle, homeLayout: home
-    }, () => flash('Saved'));
+      pauseBlur: t.pauseBlur, pauseTitle: t.pauseTitle, homeLayout: home, profiles, activeProfile: active,
+      layoutV: 2 // studio layouts are already current: the bridge's one-time migration must not rearrange them
+    }, () => flash(chrome.runtime?.lastError ? 'Not saved: ' + chrome.runtime.lastError.message : 'Saved'));
   }, 300);
 };
 
@@ -222,20 +225,79 @@ $('#reset').onclick = () => {
   flash('Layout reset');
 };
 
+// ---- profiles: named layouts (watch + home). Switching loads one; edits save into the active one.
+const validLayout = (L) => L && Array.isArray(L.main) && Object.keys(NAMES).every((id) => [...L.main, ...(L.sidebar || []), ...(L.hidden || [])].includes(id));
+const validHome = (H) => H && Array.isArray(H.shown) && Object.keys(HOME_NAMES).every((id) => [...H.shown, ...(H.hidden || [])].includes(id));
+function loadLayouts(L, H) {
+  state = { ...(validLayout(L) ? structuredClone(L) : structuredClone(PRESETS.experimental)), tweaks: state?.tweaks };
+  home = validHome(H) ? { shown: [...H.shown], hidden: [...(H.hidden || [])] } : structuredClone(HOME_DEFAULT);
+}
+function renderProfiles() {
+  $('#profSel').replaceChildren(...profiles.map((p) => h('option', { value: p.name, selected: p.name === active }, p.name)));
+  $('#profDel').disabled = profiles.length < 2;
+  $('#profNew').disabled = profiles.length >= EYT_PROFILE_MAX;
+  $('#profNew').title = profiles.length >= EYT_PROFILE_MAX ? `Up to ${EYT_PROFILE_MAX} profiles` : 'Save the current layout as a new profile';
+}
+function switchProfile(name) {
+  const p = profiles.find((x) => x.name === name); if (!p) return;
+  active = name;
+  loadLayouts(p.layout, p.homeLayout);
+  renderHome(); render(); renderProfiles();
+  flash(`Profile: ${name}`);
+}
+$('#profSel').onchange = (e) => switchProfile(e.target.value);
+let profMode = '';
+const openProfForm = (mode) => {
+  profMode = mode;
+  $('#profGroup').classList.add('editing');
+  $('#profForm').hidden = false;
+  const inp = $('#profName');
+  inp.value = mode === 'rename' ? active : '';
+  inp.removeAttribute('aria-invalid');
+  inp.focus(); inp.select();
+};
+const closeProfForm = () => { $('#profGroup').classList.remove('editing'); $('#profForm').hidden = true; $('#profSel').focus(); };
+$('#profNew').onclick = () => openProfForm('new');
+$('#profRen').onclick = () => openProfForm('rename');
+$('#profCancel').onclick = closeProfForm;
+$('#profForm').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeProfForm(); });
+$('#profForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const inp = $('#profName'), name = inp.value.trim().replace(/\s+/g, ' ');
+  const clash = profiles.some((p) => p.name.toLowerCase() === name.toLowerCase() && !(profMode === 'rename' && p.name === active));
+  if (!name || clash) { inp.setAttribute('aria-invalid', 'true'); flash(clash ? 'A profile with that name exists' : 'Name the profile'); return; }
+  if (profMode === 'new') {
+    // a new profile starts as a copy of the current layout
+    const { tweaks: _t, ...layout } = state;
+    profiles = [...profiles, { name, layout: structuredClone(layout), homeLayout: structuredClone(home) }];
+  } else profiles = profiles.map((p) => p.name === active ? { ...p, name } : p);
+  active = name;
+  closeProfForm(); renderProfiles(); save();
+});
+$('#profDel').onclick = () => {
+  if (profiles.length < 2 || !confirm(`Delete the profile "${active}"?`)) return;
+  profiles = profiles.filter((p) => p.name !== active);
+  switchProfile(profiles[0].name);
+};
+// the popup can switch profiles while this page is open
+chrome.storage.onChanged?.addListener((ch, area) => {
+  if (area !== 'sync' || !ch.activeProfile || ch.activeProfile.newValue === active || !ready) return;
+  if (Array.isArray(ch.profiles?.newValue)) profiles = ch.profiles.newValue;
+  switchProfile(ch.activeProfile.newValue);
+});
+
 let tt;
 const flash = (msg) => { $('#toast').textContent = msg; clearTimeout(tt); tt = setTimeout(() => { $('#toast').textContent = ''; }, 2000); };
 
 const SKIP = ['autoQuality', 'noAmbient', 'pauseBlur', 'pauseTitle', 'musicSeparate', 'defaultSpeed', 'musicSpeed', 'volume', 'exempt'];
-chrome.storage.sync.get(EYT_DEFAULTS, (s) => {
-  const all = Object.keys(NAMES), L = s.layout;
-  const ok = L && all.every((id) => [...L.main, ...L.sidebar, ...L.hidden].includes(id));
-  state = { ...(ok ? L : structuredClone(PRESETS.experimental)),
-    tweaks: { speed: s.defaultSpeed, musicSeparate: s.musicSeparate, musicSpeed: s.musicSpeed, exempt: s.exempt,
-      volume: s.volume, autoQuality: s.autoQuality, noAmbient: s.noAmbient,
-      pauseBlur: s.pauseBlur !== false, pauseTitle: s.pauseTitle !== false } };
-  const HL = s.homeLayout, hAll = [...(HL?.shown || []), ...(HL?.hidden || [])];
-  home = Array.isArray(HL?.shown) && Object.keys(HOME_NAMES).every((id) => hAll.includes(id))
-    ? { shown: [...HL.shown], hidden: [...HL.hidden] } : structuredClone(HOME_DEFAULT);
+chrome.storage.sync.get({ ...EYT_DEFAULTS, ...EYT_PROFILE_KEYS }, (s) => {
+  loadLayouts(s.layout, s.homeLayout);
+  state.tweaks = { speed: s.defaultSpeed, musicSeparate: s.musicSeparate, musicSpeed: s.musicSpeed, exempt: s.exempt,
+    volume: s.volume, autoQuality: s.autoQuality, noAmbient: s.noAmbient,
+    pauseBlur: s.pauseBlur !== false, pauseTitle: s.pauseTitle !== false };
+  // first run: the current layout becomes the "Default" profile
+  ({ profiles, active } = eytProfilesFrom(s));
+  renderProfiles();
   renderHome();
   render();
   ready = true;
