@@ -13,18 +13,28 @@ const RECS = [['Cleaning fungus out of old lenses', 'Bench & Lens', '214K views'
   ['Light seals in 10 minutes', 'Bench & Lens', '57K views'], ['Scanning negatives with a phone', 'Frame Rate', '640K views']];
 
 const $ = (s) => document.querySelector(s);
+const h = (tag, props = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) k in e && k !== 'style' ? (e[k] = v) : e.setAttribute(k, v);
+  e.append(...kids);
+  return e;
+};
 const lists = { main: $('#main'), sidebar: $('#side'), hidden: $('#hidden') };
 const blocks = {};
 for (const el of $('#tpl').content.children) {
   const b = el.cloneNode(true);
   b.tabIndex = 0;
-  b.insertAdjacentHTML('afterbegin', `<span class="tag">${b.dataset.id}</span><button type="button" class="x" aria-label="Hide ${NAMES[b.dataset.id]}" title="Hide">✕</button>`);
+  b.prepend(h('span', { className: 'tag' }, b.dataset.id),
+    h('button', { type: 'button', className: 'x', 'aria-label': `Hide ${NAMES[b.dataset.id]}`, title: 'Hide' }, '✕'));
   blocks[b.dataset.id] = b;
 }
 const grid = blocks.recommendations.querySelector('.grid');
 RECS.forEach(([t, c, v], i) => {
   const [a, z] = THUMBS[i];
-  grid.insertAdjacentHTML('beforeend', `<div class="card"><div class="th" style="background:linear-gradient(135deg,${a},${z})"><em>${12 + i * 3}:0${i}</em></div><div class="info"><span class="av s"></span><div><b>${t}</b><small>${c}</small><small>${v}</small></div></div></div>`);
+  grid.append(h('div', { className: 'card' },
+    h('div', { className: 'th', style: `background:linear-gradient(135deg,${a},${z})` }, h('em', {}, `${12 + i * 3}:0${i}`)),
+    h('div', { className: 'info' }, h('span', { className: 'av s' }),
+      h('div', {}, h('b', {}, t), h('small', {}, c), h('small', {}, v)))));
 });
 
 let state;
@@ -68,7 +78,8 @@ const fmtX = (n) => (+n).toString() + '×';
 function renderTweaks() {
   const t = state.tweaks;
   tw('twSpeed').value = t.speed; tw('twSpeedV').textContent = fmtX(t.speed);
-  tw('twSpeedChips').innerHTML = [1, 1.25, 1.5, 2, 3].map((v) => `<button type="button" data-v="${v}" aria-pressed="${v === t.speed}">${fmtX(v)}</button>`).join('');
+  tw('twSpeedChips').replaceChildren(...[1, 1.25, 1.5, 2, 3].map((v) =>
+    h('button', { type: 'button', 'data-v': v, 'aria-pressed': v === t.speed }, fmtX(v))));
   tw('twMusic').setAttribute('aria-checked', t.musicSeparate);
   tw('twMusicSpeed').value = t.musicSpeed; tw('twMusicSpeedV').textContent = fmtX(t.musicSpeed);
   tw('twMusicRow').classList.toggle('tw-dim', !t.musicSeparate);

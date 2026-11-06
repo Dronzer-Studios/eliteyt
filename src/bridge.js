@@ -16,7 +16,9 @@ const migrate = (s) => {
   chrome.storage.sync.set({ layout: L, layoutV: 2 }); // triggers onChanged → push of the migrated settings
   return { ...s, layout: L, layoutV: 2 };
 };
-const load = () => chrome.storage.sync.get(EYT_DEFAULTS, (s) => push(migrate(s)));
+// layoutV is not in EYT_DEFAULTS, so ask for it explicitly or migrate() rewrites the layout on every load;
+// Firefox fires onChanged even for identical values, which loops load → set → load forever.
+const load = () => chrome.storage.sync.get({ ...EYT_DEFAULTS, layoutV: 0 }, (s) => push(migrate(s)));
 load();
 chrome.storage.onChanged.addListener(load);
 document.addEventListener('eliteyt:set', (e) => {
