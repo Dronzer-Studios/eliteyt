@@ -39,6 +39,19 @@ npx web-ext run                  # launches a clean Firefox with EliteYT loaded
 npx web-ext build                # zip in web-ext-artifacts/, ready for AMO
 ```
 
+## Tests
+
+The extension has no build step; `package.json` only holds dev tooling.
+
+```sh
+npm install
+npx playwright install chromium
+npm test                     # every suite; or: node tests/run.js adblock slop
+npm run lint                 # web-ext lint
+```
+
+Each suite in `tests/` loads the unpacked extension in Chromium and serves YouTube-shaped fixture pages through request interception, so no test touches youtube.com. CI (`.github/workflows/ci.yml`) runs them, plus `web-ext lint`, on every pull request.
+
 ## Usage
 
 Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Switch its **Page** control to **Home** to reorder or hide the home sections (carousel, Continue watching, From your subscriptions, Recommended). Every feature can be switched off there.
