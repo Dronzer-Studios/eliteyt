@@ -160,8 +160,8 @@
   document.addEventListener('ratechange', (e) => {
     if (!isMain(e)) return;
     applyQuality();
-    // ignore the player's own reset right after a video loads
-    if (s.rememberSpeed && Date.now() - loadedAt > 2000 && channel() && !special()) {
+    // ignore the player's own reset right after a video loads, and ads (the ad blocker runs them at 16x)
+    if (s.rememberSpeed && Date.now() - loadedAt > 2000 && !player()?.classList.contains('ad-showing') && channel() && !special()) {
       const m = read('eliteyt:speeds') || {};
       m[channel()] = e.target.playbackRate;
       localStorage.setItem('eliteyt:speeds', JSON.stringify(m));

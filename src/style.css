@@ -342,3 +342,31 @@ html.eyt-exp ytd-watch-flexy #related > #owner { width: auto !important; max-wid
 html.eyt-exp ytd-watch-flexy #related > #owner #subscribe-button { margin-left: 16px !important; }
 html.eyt-exp ytd-watch-flexy #secondary-inner > .eyt-empty { display: none !important; }
 html.eyt-exp ytd-watch-flexy[is-two-columns_] #secondary-inner > .eyt-first { margin-top: 0 !important; }
+
+/* ===== ad blocker: ad slots that still get rendered ===== */
+html.eyt-adblock :is(#masthead-ad, #player-ads, ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer, ytd-display-ad-renderer,
+  ytd-promoted-sparkles-web-renderer, ytd-promoted-sparkles-text-search-renderer, ytd-promoted-video-renderer, ytd-compact-promoted-video-renderer,
+  ytd-search-pyv-renderer, ytd-banner-promo-renderer, ytd-statement-banner-renderer, ytd-brand-video-shelf-renderer, ytd-brand-video-singleton-renderer,
+  ytd-action-companion-ad-renderer, ytd-player-legacy-desktop-watch-ads-renderer, ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
+  ytd-rich-item-renderer:has(> #content > :is(ytd-ad-slot-renderer, ytd-in-feed-ad-layout-renderer)),
+  ytd-rich-section-renderer:has(ytd-statement-banner-renderer, ytd-banner-promo-renderer, ytd-brand-video-shelf-renderer),
+  .ytp-ad-overlay-container, .ytp-ad-image-overlay, .ytp-featured-product, ytd-enforcement-message-view-model) { display: none !important; }
+
+/* ===== AI & low-effort filter ===== */
+.eyt-slop-hide { display: none !important; }
+.eyt-slop { position: relative; }
+.eyt-slop > :not(.eyt-slop-tag) { filter: blur(14px) grayscale(.6); opacity: .55; pointer-events: none; user-select: none; }
+.eyt-slop-tag { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px; text-align: center; font-family: Roboto, Arial, sans-serif; color: var(--yt-spec-text-primary, #0f0f0f); }
+.eyt-slop-tag b { font-size: 1.5rem; font-weight: 500; }
+.eyt-slop-tag small { font-size: 1.2rem; color: var(--yt-spec-text-secondary, #606060); max-width: 90%; }
+.eyt-slop-tag button, .eyt-slop-cover button { border: 0; border-radius: 18px; height: 32px; padding: 0 16px; cursor: pointer;
+  background: var(--yt-spec-badge-chip-background, rgba(0,0,0,.05)); color: inherit; font: 500 1.4rem Roboto, Arial, sans-serif; }
+.eyt-slop-tag button:hover { background: var(--yt-spec-10-percent-layer, rgba(0,0,0,.1)); }
+.eyt-slop-cover { position: absolute; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 24px; text-align: center; background: rgba(0,0,0,.88); backdrop-filter: blur(24px); color: #fff; font-family: Roboto, Arial, sans-serif; }
+.eyt-slop-cover-title { font-size: 2.2rem; font-weight: 500; }
+.eyt-slop-cover-why { font-size: 1.4rem; color: #bbb; max-width: 560px; }
+.eyt-slop-cover-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+.eyt-slop-cover button { background: rgba(255,255,255,.14); color: #fff; }
+.eyt-slop-cover button:first-child { background: #fff; color: #0f0f0f; }
