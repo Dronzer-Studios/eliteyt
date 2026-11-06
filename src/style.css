@@ -317,7 +317,8 @@ html[dark].eyt-home ytd-browse[page-subtype="home"] ytd-feed-filter-chip-bar-ren
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .eyt-ptop-ch { font: 500 14px/20px Roboto, sans-serif; color: rgba(255,255,255,.8); margin-top: 2px; }
 #movie_player.ytp-autohide .eyt-ptop, #movie_player.eyt-paused-info .eyt-ptop, #movie_player.ad-showing .eyt-ptop { opacity: 0; }
-#movie_player:has(.eyt-ptop) .ytp-chrome-top .ytp-title { display: none !important; } /* YouTube's own fullscreen title would double it */
+/* fullscreen: YouTube shows its own title overlay, so ours would double it */
+#movie_player.ytp-fullscreen .eyt-ptop, ytd-watch-flexy[fullscreen] .eyt-ptop, :fullscreen .eyt-ptop { display: none; }
 
 /* YouTube's "New" badge: small grey label under the metadata */
 .eyt-new { align-self: flex-start; margin-top: 4px; padding: 0 4px; border-radius: 4px; background: var(--chip); color: var(--fg2);
