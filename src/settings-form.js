@@ -22,7 +22,7 @@ const EYT_GROUPS = [
   ['Dislikes', [['ryd', 'Show dislike count (Return YouTube Dislike)']]],
   ['Home', [['homeShelves', 'Shelves: Continue watching, Subscriptions, Recommended'], ['homeClean', 'Clean home grid'], ['#homeCols', 'Home columns', 2, 8, 1],
     ['homeNoShorts', 'Hide Shorts on home'], ['homeNoAds', 'Hide ads, promos and topic shelves on home']]],
-  ['Look', [['topbar', 'EliteYT top bar: no left sidebar, Home / Subscriptions / You by the avatar'], ['expLayout', 'Custom watch layout'], ['descToPanel', 'Open description in the comments panel'], ['stats', 'Stats overlay'], ['pauseInfo', "Pause screen: show what you're watching"], ['pauseBlur', 'Pause screen: blur the video'], ['pauseTitle', 'Pause screen: show the title'], ['titleInPlayer', 'Title on the player (hover) instead of the sidebar']]]
+  ['Look', [['topbar', 'EliteYT top bar: no left sidebar, Home / Subscriptions / You by the avatar'], ['expLayout', 'Custom watch layout'], ['descToPanel', 'Open description in the comments panel'], ['stats', 'Stats overlay'], ['pauseInfo', "Pause screen: show what you're watching"], ['pauseBlur', 'Pause screen: blur the video'], ['pauseTitle', 'Pause screen: show the title'], ['titleInPlayer', 'Title on the player (hover) instead of the sidebar'], ['profileKeys', 'Alt+Shift+P switches to the next layout profile']]]
 ];
 
 const EYT_LISTS = ['exempt', 'slopAllow', 'slopBlock']; // one-channel-per-line settings
@@ -63,20 +63,3 @@ function eytBuildForm(form, s, skip = []) {
   }
 }
 
-// Layout profiles: named watch + home layouts. `layout` / `homeLayout` always hold the active profile's copy (that is
-// what the content scripts read); `profiles` keeps every profile in order. Profiles are not in EYT_DEFAULTS, so the
-// bridge never pushes them into the YouTube page. Sync storage caps one item at 8 KB, which bounds the count.
-const EYT_PROFILE_MAX = 15;
-const EYT_PROFILE_KEYS = { profiles: null, activeProfile: '' };
-function eytProfilesFrom(s) {
-  const list = Array.isArray(s.profiles) ? s.profiles.filter((p) => p && typeof p.name === 'string' && p.name) : [];
-  const profiles = list.length ? list.map((p) => ({ ...p })) : [{ name: 'Default', layout: s.layout, homeLayout: s.homeLayout }];
-  const active = profiles.some((p) => p.name === s.activeProfile) ? s.activeProfile : profiles[0].name;
-  return { profiles, active };
-}
-// switch the live layout to a saved profile (popup and studio)
-function eytSwitchProfile(profiles, name, cb) {
-  const p = profiles.find((x) => x.name === name); if (!p) return;
-  chrome.storage.sync.set({ activeProfile: name, profiles, layoutV: 2,
-    layout: p.layout || EYT_DEFAULTS.layout, homeLayout: p.homeLayout || EYT_DEFAULTS.homeLayout }, cb);
-}

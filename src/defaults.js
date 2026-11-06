@@ -15,5 +15,10 @@ const EYT_DEFAULTS = {
     hidden: ['chat']
   },
   // home page sections, top to bottom; 'recommended' is YouTube's own endless feed, so it always comes last
-  homeLayout: { shown: ['hero', 'continue', 'subs', 'recommended'], hidden: [] }
+  homeLayout: { shown: ['hero', 'continue', 'subs', 'recommended'], hidden: [] },
+  // narrow windows (one column), and theater mode when `theater` is on: one stacked list
+  stackLayout: { order: ['player', 'title', 'channel', 'actions', 'description', 'comments', 'recommendations'], hidden: ['merch', 'chat'], theater: false },
+  // other pages: grid columns and the sections that are hidden
+  pageLayouts: { subs: { cols: 0, hide: [] }, search: { hide: [] }, channel: { cols: 0, hide: [] } }, // cols 0 = YouTube's choice
+  profileKeys: true
 };

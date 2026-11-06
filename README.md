@@ -56,9 +56,20 @@ Each suite in `tests/` loads the unpacked extension in Chromium and serves YouTu
 
 Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Switch its **Page** control to **Home** to reorder or hide the home sections (carousel, Continue watching, From your subscriptions, Recommended). Every feature can be switched off there.
 
-**Profiles** keep several layouts (watch + home) side by side: **New** saves the current layout under a name, edits go into the selected profile, and the toolbar popup can switch between them from any tab. Speed, volume and the other settings are shared by all profiles.
+**Views:** **Watch** (two columns), **Narrow** (the stacked order used when the window is too narrow for two columns, and optionally in theater mode), **Home** (shelf order) and **Pages** (what subscriptions, search and channel pages show, and their column count). **Undo / Redo** (Ctrl+Z / Ctrl+Shift+Z) steps back through layout edits.
 
-![Layout Studio profile controls](docs/img/studio-profiles.jpg)
+**Profiles** keep several sets of layouts side by side. **New** saves the current layouts under a name; edits go into the selected profile. Under **Profile options** a profile can also:
+- carry its own playback, SponsorBlock, filter and Clean UI settings (otherwise all profiles share them);
+- switch on automatically for music videos or chosen channels; this changes only the tab playing that video and switches back when you leave it;
+- be exported to a JSON file and imported again (or shared).
+
+Switch profiles from the studio, the toolbar popup, the **Tweaks** tab beside a video, or with **Alt+Shift+P** on YouTube.
+
+![Layout Studio profile options](docs/img/studio-profile-options.jpg)
+
+| Narrow windows / theater | Other pages |
+|---|---|
+| ![Layout Studio, narrow-window layout](docs/img/studio-narrow.jpg) | ![Layout Studio, subscriptions, search and channel pages](docs/img/studio-pages.jpg) |
 
 | Watch page: title above the player | Home page: all sections | Home page: carousel and Continue watching hidden |
 |---|---|---|

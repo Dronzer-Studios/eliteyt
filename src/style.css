@@ -370,3 +370,33 @@ html.eyt-adblock :is(#masthead-ad, #player-ads, ytd-ad-slot-renderer, ytd-in-fee
 .eyt-slop-cover-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
 .eyt-slop-cover button { background: rgba(255,255,255,.14); color: #fff; }
 .eyt-slop-cover button:first-child { background: #fff; color: #0f0f0f; }
+
+/* ===== narrow windows / theater: the stacked layout (everything in the main column) ===== */
+html.eyt-exp ytd-watch-flexy.eyt-stacked #primary-inner > :is(#related, #title, #bottom-row, #owner, #actions, .eyt-panel, ytd-merch-shelf-renderer, #chat-container) { margin-top: 16px; }
+html.eyt-exp ytd-watch-flexy.eyt-stacked #primary-inner > :first-child:not(#player) { margin-top: 0 !important; }
+html.eyt-exp ytd-watch-flexy.eyt-stacked #primary-inner > #player:not(:first-child) { margin-top: 16px; }
+/* theater + stacked: one full-width column, unless YouTube shows a playlist there */
+html.eyt-exp ytd-watch-flexy.eyt-stacked[theater] #secondary:not(:has(ytd-playlist-panel-renderer:not([hidden]))) { display: none !important; }
+
+/* ===== other pages (layout studio → Pages) ===== */
+html.eyt-subs-cols ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer {
+  --ytd-rich-grid-items-per-row: var(--eyt-subs-cols, 4) !important; --ytd-rich-grid-posts-per-row: var(--eyt-subs-cols, 4) !important; }
+html.eyt-channel-cols ytd-browse[page-subtype="channels"] ytd-rich-grid-renderer {
+  --ytd-rich-grid-items-per-row: var(--eyt-channel-cols, 4) !important; --ytd-rich-grid-posts-per-row: var(--eyt-channel-cols, 4) !important; }
+html.eyt-subs-no-shorts ytd-browse[page-subtype="subscriptions"] :is(
+  ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts], ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+  ytd-rich-item-renderer:has(a[href^="/shorts/"])),
+html.eyt-subs-no-watched ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(
+  ytd-thumbnail-overlay-resume-playback-renderer, .ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment),
+html.eyt-subs-no-upcoming ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(
+  ytd-thumbnail-overlay-time-status-renderer[overlay-style="UPCOMING"], .yt-badge-shape--thumbnail-upcoming, [aria-label="Upcoming"]),
+html.eyt-subs-no-live ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(
+  ytd-thumbnail-overlay-time-status-renderer[overlay-style="LIVE"], .badge-style-type-live-now-alternate, .yt-badge-shape--thumbnail-live),
+html.eyt-search-no-shorts ytd-search :is(ytd-reel-shelf-renderer, grid-shelf-view-model, ytd-video-renderer:has(a[href^="/shorts/"])),
+html.eyt-search-no-shelves ytd-search :is(ytd-shelf-renderer, ytd-horizontal-card-list-renderer, ytd-vertical-list-renderer),
+html.eyt-search-no-channels ytd-search ytd-channel-renderer,
+html.eyt-search-no-playlists ytd-search :is(ytd-playlist-renderer, ytd-radio-renderer, yt-lockup-view-model:has(a[href^="/playlist?list="], a[href*="&list=RD"])),
+html.eyt-channel-no-banner ytd-browse[page-subtype="channels"] :is(#page-header-banner, yt-page-header-renderer yt-image-banner-view-model, ytd-c4-tabbed-header-renderer #banner, #page-header .page-header-banner),
+html.eyt-channel-no-trailer ytd-browse[page-subtype="channels"] ytd-channel-video-player-renderer,
+html.eyt-channel-no-shorts ytd-browse[page-subtype="channels"] :is(ytd-reel-shelf-renderer, ytd-item-section-renderer:has(ytd-reel-shelf-renderer),
+  ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])) { display: none !important; }
