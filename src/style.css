@@ -27,6 +27,9 @@ html.eyt-exp.eyt-side-left ytd-watch-flexy[is-two-columns_] #primary { margin-le
 html.eyt-exp ytd-watch-flexy[is-two-columns_] #primary-inner > :is(#related, #title, #bottom-row, #owner, #actions, .eyt-panel, ytd-merch-shelf-renderer) { margin-top: 16px; }
 html.eyt-exp ytd-watch-flexy[is-two-columns_] #secondary-inner > :is(#title, #bottom-row, #owner, #actions, .eyt-panel, ytd-merch-shelf-renderer, #related) { margin-top: 12px; }
 html.eyt-exp ytd-watch-flexy[is-two-columns_] #secondary-inner > :first-child { margin-top: 0 !important; }
+/* blocks the layout studio put above the player: the first one sits flush at the top, the player gets the gap */
+html.eyt-exp ytd-watch-flexy[is-two-columns_] #primary-inner > :first-child:not(#player) { margin-top: 0 !important; }
+html.eyt-exp ytd-watch-flexy[is-two-columns_] #primary-inner > #player:not(:first-child) { margin-top: 16px; }
 
 /* moved metadata parts: colour comes from --eyt-fg (read off YouTube's own metadata box) */
 html.eyt-exp ytd-watch-flexy #columns > * > * > :is(#title, #bottom-row, #owner, #actions) { color: var(--eyt-fg, #0f0f0f); }

@@ -462,15 +462,30 @@
         if (e.parentNode !== target || (prev && !(prev.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING))) move(e, target);
         last.set(target, e);
       };
+      // The player itself is never moved (YouTube moves its contents for theater / fullscreen and re-parenting
+      // would reconnect ytd-player). Blocks listed above it are inserted right before it; the rest follow it.
+      const pl = part('player'), at = pl?.parentNode === pri ? (L.main || []).indexOf('player') : -1;
+      if (at >= 0) last.set(pri, pl);
+      const above = [];
       for (const col of ['main', 'sidebar', 'hidden']) {
-        for (const id of L[col] || []) {
-          if (id === 'player') continue; // YouTube moves the player itself (theater, fullscreen)
-          if (id === 'description' && tab === 'description') continue;
-          if ((id === 'actions' || (id === 'channel' && inlineCh)) && inline) continue;
-          const e = part(id); if (!e) continue;
-          if (id === 'comments') { if (e.parentNode !== pages.comments) place(e, pages.comments); put(panel, cols[col], (x, t) => t.append(x)); }
-          else put(e, (id === 'description' && s.descToPanel) || (id === 'title' && s.titleInPlayer) ? holder : cols[col]); // description lives in its tab, title in the player
-        }
+        (L[col] || []).forEach((id, i) => {
+          if (id === 'player') return;
+          if (id === 'description' && tab === 'description') return;
+          if ((id === 'actions' || (id === 'channel' && inlineCh)) && inline) return;
+          const e = part(id); if (!e) return;
+          let node = e, target = cols[col], move = place;
+          if (id === 'comments') { if (e.parentNode !== pages.comments) place(e, pages.comments); node = panel; move = (x, t) => t.append(x); }
+          // description lives in its tab; with "title on the player" the title replaces the sidebar copy only,
+          // a title placed in the main column stays on the page
+          else if ((id === 'description' && s.descToPanel) || (id === 'title' && s.titleInPlayer && col === 'sidebar')) target = holder;
+          if (col === 'main' && i < at && target === pri) above.push(node);
+          else put(node, target, move);
+        });
+      }
+      let ref = pl;
+      for (const e of above.reverse()) {
+        if (e.nextElementSibling !== ref) { if (e !== panel && !orig.has(e)) orig.set(e, [e.parentNode, e.nextSibling]); pri.insertBefore(e, ref); }
+        ref = e;
       }
       const a = part('actions'), r = part('recommendations');
       if (inline && a && r) {
