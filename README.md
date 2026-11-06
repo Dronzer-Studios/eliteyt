@@ -39,7 +39,7 @@ npx web-ext build                # zip in web-ext-artifacts/, ready for AMO
 
 ## Usage
 
-Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Every feature can be switched off there.
+Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Switch its **Page** control to **Home** to reorder or hide the home sections (carousel, Continue watching, From your subscriptions, Recommended). Every feature can be switched off there.
 
 ## Architecture
 

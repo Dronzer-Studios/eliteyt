@@ -191,6 +191,23 @@ button:focus-visible, input:focus-visible, .block:focus-visible { outline: 2px s
 .tray-list .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: var(--sunk); font-weight: 500; font-size: 13px; }
 .tray-list .chip::before { content: "+"; color: var(--accent); font-weight: 700; }
 
+/* page switch + mock home page */
+body:not(.view-home) .home-only, body.view-home .watch-only { display: none !important; }
+.home-page { padding: 16px; font-family: var(--yt); }
+.home-page .col { min-height: 120px; }
+.block > .x, .block > .tag { z-index: 2; } /* keep hide buttons above positioned mocks (carousel, player) */
+.shelf-h { margin: 0 0 10px; font: 700 18px/24px var(--yt); }
+.hero { position: relative; height: 170px; border-radius: 10px; overflow: hidden; padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px;
+  background: linear-gradient(90deg, #000c 0%, #0006 45%, #0000 80%), linear-gradient(135deg, #5b6b7a, #2e3a46); color: #fff; }
+.hero small { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; opacity: .8; }
+.hero b { font-size: 20px; line-height: 1.2; max-width: 60%; }
+.hero .pill.dark { align-self: flex-start; background: #fff; color: #000; }
+.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.strip > div { aspect-ratio: 16 / 9; border-radius: 8px; position: relative; overflow: hidden; }
+.strip.prog > div::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--p, 40%); background: #ff0033; }
+.strip > div em { position: absolute; left: 6px; top: 6px; font: 600 10px var(--yt); font-style: normal; background: #ff0033; color: #fff; padding: 1px 5px; border-radius: 3px; }
+@media (max-width: 760px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
 /* export */
 .out { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
 .out .row { justify-content: space-between; flex-wrap: wrap; }
@@ -220,30 +237,36 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
 <div class="wrap">
   <header class="top">
     <h1>Elite<span>YT</span> Layout Studio</h1>
-    <p class="lede">Drag blocks between the columns to arrange the watch page. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
+    <p class="lede">Drag blocks to arrange the watch page or the home page. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
   </header>
 
   <div class="bar" role="toolbar" aria-label="Layout controls">
-    <div class="group"><span class="lab">Preset</span>
+    <div class="group"><span class="lab">Page</span>
+      <div class="seg" id="pageSel">
+        <button type="button" data-view="watch">Watch</button>
+        <button type="button" data-view="home">Home</button>
+      </div>
+    </div>
+    <div class="group watch-only"><span class="lab">Preset</span>
       <div class="seg" id="presets">
         <button type="button" data-preset="experimental">Experimental</button>
         <button type="button" data-preset="classic">Classic</button>
         <button type="button" data-preset="focus">Focus</button>
       </div>
     </div>
-    <div class="group"><span class="lab">Sidebar</span>
+    <div class="group watch-only"><span class="lab">Sidebar</span>
       <div class="seg" id="sidePos">
         <button type="button" data-side="left">Left</button>
         <button type="button" data-side="right">Right</button>
       </div>
     </div>
-    <div class="group"><label class="lab" for="sideW">Width</label>
+    <div class="group watch-only"><label class="lab" for="sideW">Width</label>
       <input id="sideW" type="range" min="300" max="560" step="10"><span class="val" id="sideWv"></span>
     </div>
-    <div class="group"><label class="lab" for="cols">Video columns</label>
+    <div class="group watch-only"><label class="lab" for="cols">Video columns</label>
       <input id="cols" type="range" min="1" max="5" step="1"><span class="val" id="colsv"></span>
     </div>
-    <div class="group"><span class="lab">Cards</span>
+    <div class="group watch-only"><span class="lab">Cards</span>
       <div class="seg" id="cardStyle">
         <button type="button" data-card="grid">Grid</button>
         <button type="button" data-card="list">List</button>
@@ -251,7 +274,7 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
     </div>
   </div>
 
-  <div class="window">
+  <div class="window watch-only">
     <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
     <div class="page" id="page">
       <div class="col main" id="main" aria-label="Main column"></div>
@@ -259,10 +282,24 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
     </div>
   </div>
 
-  <section class="tray">
+  <section class="tray watch-only">
     <h2>Hidden</h2>
     <p>Blocks here won't show on the watch page. Drag one back to show it.</p>
     <div class="tray-list" id="hidden" aria-label="Hidden blocks"></div>
+  </section>
+
+  <div class="window home-only">
+    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
+    <div class="home-page">
+      <div class="col" id="homeMain" aria-label="Home page sections"></div>
+    </div>
+  </div>
+
+  <section class="tray home-only">
+    <h2>Hidden on home</h2>
+    <p>Sections here won't show on the home page. Drag or click one to bring it back. Recommended is YouTube's endless feed, so it always stays last.
+      These sections need <b>Shelves</b> (under Home in All settings) switched on.</p>
+    <div class="tray-list" id="homeHidden" aria-label="Hidden home sections"></div>
   </section>
 
   <section class="out">
@@ -331,6 +368,13 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
   </div>
   <div class="block recs" data-id="recommendations"><span class="chip">Recommendations</span><div class="grid"></div></div>
   <div class="block chat" data-id="chat"><span class="chip">Live chat</span><b>Live chat</b><div class="box"><span class="sk" style="width:70%"></span><span class="sk" style="width:50%"></span><span class="sk" style="width:80%"></span></div></div>
+</template>
+
+<template id="tplHome">
+  <div class="block" data-id="hero"><span class="chip">Carousel</span><div class="hero"><small>Continue watching</small><b>Restoring a 1978 film camera</b><span class="pill dark">▶ Resume</span><i></i></div></div>
+  <div class="block" data-id="continue"><span class="chip">Continue watching</span><h3 class="shelf-h">Continue watching</h3><div class="strip prog"></div></div>
+  <div class="block" data-id="subs"><span class="chip">From your subscriptions</span><h3 class="shelf-h">From your subscriptions</h3><div class="strip"></div></div>
+  <div class="block recs" data-id="recommended"><span class="chip">Recommended</span><h3 class="shelf-h">Recommended for you</h3><div class="grid"></div></div>
 </template>
 
 <script src="vendor/Sortable.min.js"></script>
