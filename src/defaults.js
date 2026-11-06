@@ -12,5 +12,7 @@ const EYT_DEFAULTS = {
     main: ['player', 'channel', 'actions', 'recommendations'],
     sidebar: ['title', 'description', 'merch', 'comments'],
     hidden: ['chat']
-  }
+  },
+  // home page sections, top to bottom; 'recommended' is YouTube's own endless feed, so it always comes last
+  homeLayout: { shown: ['hero', 'continue', 'subs', 'recommended'], hidden: [] }
 };

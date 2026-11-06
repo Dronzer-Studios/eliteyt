@@ -185,6 +185,15 @@
     return box;
   };
 
+  // home sections from the layout studio; anything unknown or missing falls back to the default order
+  const HOME_IDS = ['hero', 'continue', 'subs', 'recommended'];
+  const homeLayout = () => {
+    const L = s.homeLayout, all = [...(L?.shown || []), ...(L?.hidden || [])];
+    return Array.isArray(L?.shown) && HOME_IDS.every((id) => all.includes(id)) ? L : { shown: HOME_IDS, hidden: [] };
+  };
+  // "Recommended" hidden in the studio: hide YouTube's own feed under the shelves
+  const applyHomeClasses = () => document.documentElement.classList.toggle('eyt-home-norec', !!s.homeShelves && !homeLayout().shown.includes('recommended'));
+
   let building = false, nav = 0;
   async function render(force) {
     const grid = document.querySelector('ytd-browse[page-subtype="home"] ytd-rich-grid-renderer');
@@ -197,7 +206,8 @@
     try {
       const local = readHist();
       // every source is requested at once; each is cached for 10 minutes
-      const [hist, sub] = await Promise.all([feed('/feed/history', 60), feed('/feed/subscriptions', 24)]);
+      const L = homeLayout(), on = (id) => L.shown.includes(id);
+      const [hist, sub] = await Promise.all([feed('/feed/history', 60), on('subs') ? feed('/feed/subscriptions', 24) : []]);
       watchedIds = new Set([...local.map((x) => x.id), ...hist.map((x) => x.id)]);
 
       // Local positions first (exact second), then half-watched videos from YouTube's own history (signed in).
@@ -211,7 +221,7 @@
       }
       const resume = (v) => ({ t: v.t, progress: v.t / v.dur, badge: `${fmtTime(v.dur - v.t)} left`, meta: v.at ? ago(v.at) : '' });
 
-      const parts = [];
+      const parts = {};
       // slide 1: the last video watched (resume it if unfinished)
       const watched = [...local, ...hist.filter((v) => !local.some((x) => x.id === v.id))];
       const lastV = watched[0], slides = [];
@@ -221,7 +231,7 @@
       }
       // slides 2-4: newest upload from up to three other recently watched channels (fetched in parallel)
       const chans = [];
-      for (const v of watched) {
+      for (const v of on('hero') ? watched : []) {
         const key = v.cid || v.ch;
         if (!key || key === (lastV?.cid || lastV?.ch) || v.ch === lastV?.ch || chans.some((c) => (c.cid || c.ch) === key)) continue;
         chans.push(v);
@@ -244,16 +254,18 @@
         const [v, name] = r;
         slides.push([{ ...v, ch: name, meta: undefined }, { label: `New from ${name}`, meta: [v.ch, v.meta].filter(Boolean).join(' · ') }]);
       }
-      if (!slides.length) { const pick = (await feed('/', 1))[0]; if (pick) slides.push([pick, { label: 'Top pick for you', meta: pick.meta }]); }
-      if (slides.length) parts.push(hero(slides));
-      if (cont.length) parts.push(shelf('Continue watching', cont.slice(0, 20).map((v) => card(v, {
+      if (on('hero') && !slides.length) { const pick = (await feed('/', 1))[0]; if (pick) slides.push([pick, { label: 'Top pick for you', meta: pick.meta }]); }
+      if (slides.length) parts.hero = hero(slides);
+      if (cont.length) parts.continue = shelf('Continue watching', cont.slice(0, 20).map((v) => card(v, {
         ...resume(v), onRemove: (e) => { e.preventDefault(); e.stopPropagation(); writeHist(readHist().filter((x) => x.id !== v.id)); dismiss(v.id); render(true); }
-      }))));
-      if (sub.length) parts.push(shelf('From your subscriptions', sub.map((v) => card(v, { badge: v.badge, meta: v.meta }))));
-      parts.push(h('h2', { class: 'eyt-rec-head' }, 'Recommended for you'));
+      })));
+      if (sub.length) parts.subs = shelf('From your subscriptions', sub.map((v) => card(v, { badge: v.badge, meta: v.meta })));
+      // sections in the order the layout studio saved; hidden ones are left out
+      const shown = L.shown.filter((id) => id !== 'recommended').map((id) => parts[id]).filter(Boolean);
+      if (on('recommended') && shown.length) shown.push(h('h2', { class: 'eyt-rec-head' }, 'Recommended for you'));
 
       const box = old || h('div', { class: 'eyt-shelves' });
-      box.replaceChildren(...parts);
+      box.replaceChildren(...shown);
       box.dataset.nav = nav;
       if (box.nextElementSibling !== contents) contents.before(box);
     } finally { building = false; }
@@ -296,6 +308,7 @@
     document.querySelectorAll('.eyt-nav-btn').forEach((a) => a.classList.toggle('on', a.dataset.path === location.pathname));
   }
   document.documentElement.classList.toggle('eyt-chrome', !!s.topbar);
+  applyHomeClasses();
 
   // ---------------- home chip bar: hidden at the top, slides in as a fixed bar once you scroll ----------------
   let raf = 0;
@@ -312,6 +325,7 @@
   document.addEventListener('eliteyt:settings', (e) => {
     s = JSON.parse(e.detail);
     document.documentElement.classList.toggle('eyt-chrome', !!s.topbar);
+    applyHomeClasses();
     if (s.topbar) topbar();
     render(true);
   });
