@@ -1,6 +1,6 @@
 # EliteYT
 
-> A Chrome / Helium extension that rearranges YouTube around the video: calmer home, comments beside the player, pause screen, SponsorBlock, DeArrow and Return YouTube Dislike built in.
+> A Chrome / Helium / Firefox extension that rearranges YouTube around the video: calmer home, comments beside the player, pause screen, SponsorBlock, DeArrow and Return YouTube Dislike built in.
 
 **Site & teaser:** https://dronzer-studios.github.io/eliteyt/
 
@@ -19,7 +19,23 @@
 git clone https://github.com/Dronzer-Studios/eliteyt
 ```
 
-Then open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `eliteyt` folder.
+**Chrome / Helium:** open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `eliteyt` folder.
+
+**Firefox (140+, Android 142+):**
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on** and pick `eliteyt/manifest.json`.
+3. Open any YouTube video: the sidebar should turn into the Comments / Description / Tweaks panel, and the EliteYT icon appears in the toolbar (pin it from the puzzle-piece menu).
+
+Temporary add-ons are removed when Firefox restarts; repeat step 2, or click **Reload** on the same page after pulling changes. Battery saver is Chrome-only (Firefox has no Battery API); everything else works the same.
+
+To check or package the Firefox build (`web-ext-config.mjs` keeps `docs/` out of the zip):
+
+```sh
+npx web-ext lint                 # should report 0 errors, 0 warnings
+npx web-ext run                  # launches a clean Firefox with EliteYT loaded
+npx web-ext build                # zip in web-ext-artifacts/, ready for AMO
+```
 
 ## Usage
 
