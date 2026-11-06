@@ -208,6 +208,14 @@ body:not(.view-home) .home-only, body.view-home .watch-only { display: none !imp
 .strip > div em { position: absolute; left: 6px; top: 6px; font: 600 10px var(--yt); font-style: normal; background: #ff0033; color: #fff; padding: 1px 5px; border-radius: 3px; }
 @media (max-width: 760px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
+/* profiles */
+.prof-sel { height: 30px; max-width: 180px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 500 13px var(--ui); padding: 0 8px; cursor: pointer; }
+.seg button:disabled { color: var(--muted); cursor: not-allowed; }
+.prof-form { display: flex; gap: 6px; align-items: center; }
+.prof-form input { height: 30px; width: 160px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 13px var(--ui); padding: 0 10px; }
+.prof-form input[aria-invalid="true"] { border-color: var(--accent); }
+#profGroup.editing > :is(#profSel, #profBtns) { display: none; }
+
 /* export */
 .out { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
 .out .row { justify-content: space-between; flex-wrap: wrap; }
@@ -241,6 +249,19 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
   </header>
 
   <div class="bar" role="toolbar" aria-label="Layout controls">
+    <div class="group" id="profGroup"><label class="lab" for="profSel">Profile</label>
+      <select id="profSel" class="prof-sel"></select>
+      <div class="seg" id="profBtns">
+        <button type="button" id="profNew" title="Save the current layout as a new profile">New</button>
+        <button type="button" id="profRen">Rename</button>
+        <button type="button" id="profDel">Delete</button>
+      </div>
+      <form id="profForm" class="prof-form" hidden>
+        <input id="profName" maxlength="30" autocomplete="off" aria-label="Profile name" placeholder="Profile name">
+        <button type="submit" class="btn primary">Save</button>
+        <button type="button" class="btn" id="profCancel">Cancel</button>
+      </form>
+    </div>
     <div class="group"><span class="lab">Page</span>
       <div class="seg" id="pageSel">
         <button type="button" data-view="watch">Watch</button>

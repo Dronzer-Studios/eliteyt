@@ -11,11 +11,15 @@
   input[type=number] { width: 56px; margin-left: auto; background: #222; color: inherit; border: 1px solid #444; border-radius: 4px; }
   textarea { background: #222; color: inherit; border: 1px solid #444; border-radius: 4px; font: inherit; resize: vertical; }
   #full { width: 100%; margin-top: 12px; height: 34px; border: 0; border-radius: 17px; background: #f1f1f1; color: #0f0f0f; font: 500 13px Roboto, sans-serif; cursor: pointer; }
+  [hidden] { display: none !important; }
+  .prof { justify-content: space-between; margin-bottom: 4px; }
+  .prof select { max-width: 150px; background: #222; color: inherit; border: 1px solid #444; border-radius: 4px; padding: 2px 4px; font: inherit; }
   .hint { color: #888; font-size: 11px; margin: 10px 0 0; }
 </style>
 </head>
 <body>
 <h1>EliteYT</h1>
+<label class="prof" id="profRow" hidden>Layout profile <select id="prof"></select></label>
 <div id="form"></div>
 <button type="button" id="full">Open layout studio</button>
 <p class="hint">Speed keys: <b>]</b> faster, <b>[</b> slower, <b>\</b> reset.</p>
