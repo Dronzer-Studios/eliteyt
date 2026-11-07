@@ -1,3 +1,45 @@
+// EliteYT Layout Studio.
+// One model ({ layout, pieces, home, stack, topbar, pages }) is shown as five editable mock pages. Everything on them
+// (blocks, the buttons inside blocks, top-bar items, page sections) is dragged between lists; hidden things live in the
+// Hidden panel. The studio's own panels can be dragged between three docks and folded. Edits save into the active
+// profile (profiles.js) and apply to open YouTube tabs.
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const SVG = 'http://www.w3.org/2000/svg';
+const h = (tag, props = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k in e && !k.includes('-')) e[k] = v;
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  e.append(...kids.flat().filter((x) => x != null && x !== false));
+  return e;
+};
+const ICONS = {
+  like: 'M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9Z',
+  share: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13',
+  save: 'M3 6h11M3 12h11M3 18h7M18 9v6M15 12h6',
+  download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+  clip: 'M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12',
+  thanks: 'M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z',
+  menu: 'M3 6h18M3 12h18M3 18h18', search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+  mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3',
+  create: 'M15 10l5-3v10l-5-3M3 6h12v12H3zM9 9v6M6 12h6', bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0',
+  home: 'M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', subs: 'M3 8h18v13H3zM6 4.5h12M10 11.5v6l5-3z', you: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
+};
+const icon = (name, flip) => {
+  const s = document.createElementNS(SVG, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'ico'); s.setAttribute('aria-hidden', 'true');
+  if (flip) s.style.transform = 'rotate(180deg)';
+  const p = document.createElementNS(SVG, 'path'); p.setAttribute('d', ICONS[name]); s.append(p);
+  return s;
+};
+
+// ---------------------------------------------------------------- vocabulary
 const PRESETS = {
   experimental: { side: 'right', width: 400, cols: 3, card: 'grid',
     main: ['player', 'recommendations'], sidebar: ['title', 'description', 'channel', 'actions', 'merch', 'comments'], hidden: ['chat'] },
@@ -6,123 +48,315 @@ const PRESETS = {
   focus: { side: 'right', width: 380, cols: 3, card: 'grid',
     main: ['player', 'title', 'channel', 'actions', 'description'], sidebar: ['comments'], hidden: ['merch', 'recommendations', 'chat'] }
 };
-const NAMES = { player: 'Player', title: 'Title', description: 'Description', channel: 'Channel', actions: 'Actions', merch: 'Merch shelf', comments: 'Comments', recommendations: 'Recommendations', chat: 'Live chat' };
-// home page sections; 'recommended' is YouTube's endless feed, so it always stays last
-const HOME_DEFAULT = { shown: ['hero', 'continue', 'subs', 'recommended'], hidden: [] };
+const NAMES = { player: 'Player', title: 'Title', description: 'Description', channel: 'Channel', actions: 'Actions', merch: 'Merch shelf',
+  comments: 'Comments', recommendations: 'Recommendations', chat: 'Live chat' };
+const PIECES = {
+  actions: { likes: 'Like and dislike', share: 'Share', save: 'Save', download: 'Download', clip: 'Clip', thanks: 'Thanks' },
+  channel: { avatar: 'Avatar', name: 'Channel name', join: 'Join', subscribe: 'Subscribe' },
+  description: { info: 'Views and date', text: 'Description text' },
+  related: { chips: 'Filter chips', videos: 'Videos' }
+};
+const BLOCK_GROUP = { actions: 'actions', channel: 'channel', description: 'description', recommendations: 'related' };
 const HOME_NAMES = { hero: 'Carousel', continue: 'Continue watching', subs: 'From your subscriptions', recommended: 'Recommended' };
+const TB_NAMES = { menu: 'Menu', logo: 'Logo', search: 'Search', voice: 'Voice search', create: 'Create', nav: 'Home, Subscriptions, You',
+  notifications: 'Notifications', avatar: 'Account' };
+const PAGE_DEF = {
+  subs: { title: 'Subscriptions', cols: true, secs: { shorts: 'Shorts', live: 'Live streams', upcoming: 'Upcoming premieres', watched: 'Videos you have watched' } },
+  search: { title: 'Search results', secs: { shorts: 'Shorts', shelves: '"For you" and similar shelves', channels: 'Channel results', playlists: 'Playlists and mixes' } },
+  channel: { title: 'Channel pages', cols: true, header: true, secs: { banner: 'Banner', trailer: 'Channel trailer', shorts: 'Shorts shelf' } }
+};
+const ZONES = { header: ['Header', 'The channel banner lives here'], top: ['Top', 'Pinned above YouTube\'s results'],
+  inline: ['In YouTube\'s order', 'Left where YouTube puts them'], bottom: ['Bottom', 'Moved after YouTube\'s results'] };
+const pageZones = (pg) => [...(PAGE_DEF[pg].header ? ['header'] : []), 'top', 'inline', 'bottom'];
+const D = structuredClone(EYT_DEFAULTS);
+const VIEWS = ['watch', 'stack', 'home', 'topbar', 'pages'];
+const URLS = { watch: 'youtube.com/watch', stack: 'youtube.com/watch, narrow window', home: 'youtube.com', topbar: 'youtube.com, top bar', pages: 'subscriptions, search, channels' };
+
+// ---------------------------------------------------------------- mock content
 const THUMBS = [['#5b6b7a', '#2e3a46'], ['#9a6b3f', '#4a2f1c'], ['#4c6b4f', '#22362a'], ['#7a5a8a', '#38264a'], ['#a35a4f', '#4a221e'], ['#4f7a8a', '#1f3a44']];
 const RECS = [['Cleaning fungus out of old lenses', 'Bench & Lens', '214K views'], ['Pushing Tri-X two stops', 'Grain Lab', '88K views'],
   ['Why rangefinders came back', 'Optic Notes', '1.1M views'], ['Home C-41 in a sink', 'Grain Lab', '302K views'],
   ['Light seals in 10 minutes', 'Bench & Lens', '57K views'], ['Scanning negatives with a phone', 'Frame Rate', '640K views']];
+const grad = (i) => `background:linear-gradient(135deg,${THUMBS[i % 6][0]},${THUMBS[i % 6][1]})`;
+const card = ([t, c, v], i) => h('div', { class: 'card' }, h('div', { class: 'th', style: grad(i) }, h('em', {}, `${12 + i * 3}:0${i}`)),
+  h('div', { class: 'meta' }, h('span', { class: 'dot' }), h('div', {}, h('b', {}, t), h('small', {}, c), h('small', {}, ' · ' + v))));
+const sk = (w) => h('span', { class: 'sk', style: `width:${w}%` });
+const playerMock = () => h('div', { class: 'player' }, h('span', { class: 'play' }), h('span', { class: 'prog' }), h('span', { class: 'ctl' }, '0:42 / 13:31'));
 
-const $ = (s) => document.querySelector(s);
-const h = (tag, props = {}, ...kids) => {
-  const e = document.createElement(tag);
-  for (const [k, v] of Object.entries(props)) k in e && k !== 'style' ? (e[k] = v) : e.setAttribute(k, v);
-  e.append(...kids);
-  return e;
-};
-const lists = { main: $('#main'), sidebar: $('#side'), hidden: $('#hidden') };
-const blocks = {};
-for (const el of $('#tpl').content.children) {
-  const b = el.cloneNode(true);
-  b.tabIndex = 0;
-  b.prepend(h('span', { className: 'tag' }, b.dataset.id),
-    h('button', { type: 'button', className: 'x', 'aria-label': `Hide ${NAMES[b.dataset.id]}`, title: 'Hide' }, '✕'));
-  blocks[b.dataset.id] = b;
+// a draggable piece; `anchor` pieces stay put (the recommendations grid)
+function piece(group, id, cls, ...body) {
+  const name = (PIECES[group] || TB_NAMES)[id] || id;
+  const anchor = /\banchor\b/.test(cls || '');
+  return h('span', { class: `piece ${cls || ''}`, tabindex: anchor ? null : 0, 'data-id': id, 'aria-label': name, title: anchor ? null : `${name}: drag to move` },
+    h('span', { class: 'piece-label' }, name), h('span', { class: 'piece-body' }, ...body),
+    anchor ? null : h('button', { type: 'button', class: 'px', 'aria-label': `Hide ${name}`, title: 'Hide', tabindex: -1 }, '×'));
 }
-const grid = blocks.recommendations.querySelector('.grid');
-RECS.forEach(([t, c, v], i) => {
-  const [a, z] = THUMBS[i];
-  grid.append(h('div', { className: 'card' },
-    h('div', { className: 'th', style: `background:linear-gradient(135deg,${a},${z})` }, h('em', {}, `${12 + i * 3}:0${i}`)),
-    h('div', { className: 'info' }, h('span', { className: 'av s' }),
-      h('div', {}, h('b', {}, t), h('small', {}, c), h('small', {}, v)))));
+const pieceEls = {
+  actions: {
+    likes: piece('actions', 'likes', '', icon('like'), '41K', h('span', { class: 'sub' }, '│'), icon('like', true)),
+    share: piece('actions', 'share', '', icon('share'), 'Share'), save: piece('actions', 'save', '', icon('save'), 'Save'),
+    download: piece('actions', 'download', '', icon('download'), 'Download'), clip: piece('actions', 'clip', '', icon('clip'), 'Clip'),
+    thanks: piece('actions', 'thanks', '', icon('thanks'), 'Thanks')
+  },
+  channel: {
+    avatar: piece('channel', 'avatar', 'plain', h('span', { class: 'av' })),
+    name: piece('channel', 'name', 'plain ch-name', h('span', {}, h('b', {}, 'Bench & Lens'), h('small', {}, '1.2M subscribers'))),
+    join: piece('channel', 'join', '', 'Join'), subscribe: piece('channel', 'subscribe', 'dark', 'Subscribe')
+  },
+  description: {
+    info: piece('description', 'info', '', h('b', {}, '812K views  ·  3 days ago')),
+    text: piece('description', 'text', '', 'A full teardown of a seized leaf shutter, from cleaning the blades to re-timing at 1/500 s. ', h('b', {}, '...more'))
+  },
+  related: {
+    chips: piece('related', 'chips', '', h('span', { class: 'chips' }, h('span', {}, 'All'), h('span', {}, 'From Bench & Lens'), h('span', {}, 'Related'))),
+    videos: piece('related', 'videos', 'anchor', h('div', { class: 'vgrid' }, RECS.map(card)))
+  }
+};
+const pieceList = (block) => h('div', { class: 'pieces', 'data-group': 'p-' + BLOCK_GROUP[block], 'aria-label': `${NAMES[block]} parts` });
+function blockBody(id) {
+  switch (id) {
+    case 'player': return playerMock();
+    case 'title': return h('h3', { class: 'title' }, 'Restoring a 1978 film camera with a broken shutter');
+    case 'channel': case 'actions': case 'recommendations': return pieceList(id);
+    case 'description': return h('div', { class: 'desc-box' }, pieceList('description'));
+    case 'comments': return [h('div', { class: 'tabs' }, h('span', {}, 'Comments'), h('span', {}, 'Description'), h('span', {}, 'Tweaks')),
+      h('b', {}, '2,318 Comments'), ...[[40], [95, 80], [90, 55]].map((ws) => h('div', { class: 'cm' }, h('span', { class: 'dot' }), h('div', {}, ws.map(sk))))];
+    case 'merch': return [h('b', {}, 'Shop the store'), h('div', { class: 'merch-items' }, h('i'), h('i'), h('i'), h('i'))];
+    case 'chat': return h('div', { class: 'chatbox' }, sk(70), sk(50), sk(80));
+  }
+  return null;
+}
+function block(id, name, body, opts = {}) {
+  return h('div', { class: `block ${opts.cls || ''}`, tabindex: 0, 'data-id': id, 'aria-label': `${name}: drag to move, Delete to hide` },
+    h('div', { class: 'block-bar' }, h('span', { class: 'block-name' }, name),
+      opts.fixed ? null : h('button', { type: 'button', class: 'x', 'aria-label': `Hide ${name}`, tabindex: -1 }, 'Hide')),
+    body != null ? h('div', { class: 'block-body' }, body) : null);
+}
+const watchBlocks = Object.fromEntries(Object.keys(NAMES).map((id) => [id, block(id, NAMES[id], blockBody(id), { fixed: id === 'player' })]));
+const blockPieces = (g) => watchBlocks[Object.keys(BLOCK_GROUP).find((b) => BLOCK_GROUP[b] === g)].querySelector('.pieces');
+for (const g of Object.keys(PIECES)) blockPieces(g).append(...Object.values(pieceEls[g]));
+const stackBlocks = Object.fromEntries(Object.keys(NAMES).map((id) => [id, block(id, NAMES[id],
+  id === 'player' ? [playerMock(), sk(60)] : [sk(30 + (id.length * 7) % 50)], { cls: 'compact', fixed: id === 'player' })]));
+const homeBlocks = {
+  hero: block('hero', 'Carousel', h('div', { class: 'hero' }, h('small', {}, 'Continue watching'), h('b', {}, 'Restoring a 1978 film camera'), h('span', { class: 'pill' }, '▶ Resume'))),
+  continue: block('continue', 'Continue watching', [h('h3', { class: 'shelf-h' }, 'Continue watching'),
+    h('div', { class: 'strip prog' }, [72, 35, 88, 20].map((p, i) => h('i', { style: `${grad(i)};--p:${p}%` })))]),
+  subs: block('subs', 'From your subscriptions', [h('h3', { class: 'shelf-h' }, 'From your subscriptions'), h('div', { class: 'strip' }, [2, 3, 4, 5].map((i) => h('i', { style: grad(i) })))]),
+  recommended: block('recommended', 'Recommended', [h('h3', { class: 'shelf-h' }, 'Recommended for you'), h('div', { class: 'vgrid', style: '--cols:4' }, RECS.slice(0, 4).map(card))])
+};
+const tbEls = {
+  menu: piece('tb', 'menu', '', icon('menu')), logo: piece('tb', 'logo', '', h('span', { class: 'logo' }, h('i'), 'YouTube')),
+  search: piece('tb', 'search', 'search', 'Search', icon('search')), voice: piece('tb', 'voice', '', icon('mic')),
+  create: piece('tb', 'create', '', icon('create'), 'Create'), nav: piece('tb', 'nav', '', icon('home'), icon('subs'), icon('you')),
+  notifications: piece('tb', 'notifications', '', icon('bell')), avatar: piece('tb', 'avatar', '', h('span', { class: 'avatar' }))
+};
+const pageEls = Object.fromEntries(Object.entries(PAGE_DEF).map(([pg, def]) =>
+  [pg, Object.fromEntries(Object.entries(def.secs).map(([id, name]) => [id, block(id, name, null)]))]));
+
+// ---------------------------------------------------------------- lists (every drop target), grouped
+const lists = {};
+const list = (sel, group) => { const el = $(sel); el.dataset.group = group; lists[sel] = el; return el; };
+['#main', '#side', '#hidden'].forEach((s) => list(s, 'blocks'));
+['#stackMain', '#stackHidden'].forEach((s) => list(s, 'stack'));
+['#homeMain', '#homeHidden'].forEach((s) => list(s, 'home'));
+['#tbLeft', '#tbCenter', '#tbRight', '#tbHidden'].forEach((s) => list(s, 'tb'));
+for (const g of Object.keys(PIECES)) list('#hid-' + g, 'p-' + g);
+// the Pages view: one card per page, each with its zones
+const colsOut = {};
+for (const [pg, def] of Object.entries(PAGE_DEF)) {
+  const zones = pageZones(pg).map((z) => h('div', { class: `pz ${z === 'inline' ? 'youtube' : ''}` },
+    h('span', { class: 'zone-tag' }, ZONES[z][0]),
+    h('div', { class: 'list', id: `pg-${pg}-${z}`, 'data-empty': ZONES[z][1], 'aria-label': `${def.title}: ${ZONES[z][0]}` })));
+  const cols = def.cols ? h('div', { class: 'range' }, h('label', { class: 'lab', htmlFor: `cols-${pg}` }, 'Columns'),
+    h('input', { type: 'range', id: `cols-${pg}`, min: 1, max: 8, step: 1, 'data-page': pg }), colsOut[pg] = h('output', {})) : null;
+  $('#pagesGrid').append(h('section', { class: 'pgcard', 'data-page': pg, 'aria-label': def.title }, h('h3', {}, def.title), cols, ...zones));
+  for (const z of [...pageZones(pg), 'hidden']) list(`#pg-${pg}-${z}`, 'pg-' + pg);
+}
+const isTray = (el) => el.classList.contains('tray');
+const trayOf = (group) => Object.values(lists).find((l) => l.dataset.group === group && isTray(l));
+const allLists = () => Object.values(lists).concat(Object.keys(PIECES).map(blockPieces));
+
+// ---------------------------------------------------------------- model, validation
+// partition `src` into `zones` so that every known id appears exactly once (missing ones go where the default has them)
+function partition(src, zones, known, dflt) {
+  const out = {}, seen = new Set();
+  for (const z of zones) out[z] = (Array.isArray(src?.[z]) ? src[z] : []).filter((id) => typeof id === 'string' && known.includes(id) && !seen.has(id) && seen.add(id));
+  for (const id of known) if (!seen.has(id)) out[zones.find((z) => (dflt[z] || []).includes(id)) || zones[0]].push(id);
+  return out;
+}
+const clampN = (n, lo, hi, d) => (n != null && Number.isFinite(+n) ? Math.min(Math.max(+n, lo), hi) : d);
+const fixLayout = (L) => {
+  const p = partition(L, ['main', 'sidebar', 'hidden'], Object.keys(NAMES), D.layout);
+  if (p.hidden.includes('player')) { p.hidden = p.hidden.filter((x) => x !== 'player'); p.main.unshift('player'); }
+  return { side: L?.side === 'left' ? 'left' : 'right', width: clampN(L?.width, 300, 560, 400), cols: clampN(L?.cols, 1, 5, 3), card: L?.card === 'list' ? 'list' : 'grid', ...p };
+};
+const fixPieces = (P) => Object.fromEntries(Object.keys(PIECES).map((g) => {
+  const p = partition(P?.[g], ['order', 'hidden'], Object.keys(PIECES[g]), D.pieces[g]);
+  if (g === 'related') { p.hidden = p.hidden.filter((x) => x !== 'videos'); p.order = [...p.order.filter((x) => x !== 'videos'), 'videos']; }
+  return [g, p];
+}));
+const fixHome = (H) => { const p = partition(H, ['shown', 'hidden'], Object.keys(HOME_NAMES), D.homeLayout); const i = p.shown.indexOf('recommended'); if (i >= 0) p.shown.push(...p.shown.splice(i, 1)); return p; };
+const fixStack = (S) => {
+  const p = partition(S, ['order', 'hidden'], Object.keys(NAMES), D.stackLayout);
+  if (p.hidden.includes('player')) { p.hidden = p.hidden.filter((x) => x !== 'player'); p.order.unshift('player'); }
+  return { ...p, theater: !!S?.theater };
+};
+const fixTopbar = (T) => partition(T, ['left', 'center', 'right', 'hidden'], Object.keys(TB_NAMES), D.topbarLayout);
+const fixPages = (P) => Object.fromEntries(Object.keys(PAGE_DEF).map((pg) => {
+  const src = { ...(P?.[pg] || {}) };
+  if (!src.hidden && Array.isArray(src.hide)) src.hidden = src.hide; // the first format: hidden sections only
+  const p = partition(src, [...pageZones(pg), 'hidden'], Object.keys(PAGE_DEF[pg].secs), D.pageLayouts[pg]);
+  if (PAGE_DEF[pg].header) { // the banner can only be in the header (or hidden); nothing else can
+    for (const z of ['top', 'inline', 'bottom']) if (p[z].includes('banner')) { p[z] = p[z].filter((x) => x !== 'banner'); p.header.push('banner'); }
+    p.inline.push(...p.header.filter((x) => x !== 'banner')); p.header = p.header.filter((x) => x === 'banner');
+  }
+  return [pg, { ...(PAGE_DEF[pg].cols ? { cols: +src.cols >= 2 ? Math.min(+src.cols, 8) : 0 } : {}), ...p }];
+}));
+const modelFrom = (s) => ({ layout: fixLayout(s.layout), pieces: fixPieces(s.pieces), home: fixHome(s.homeLayout), stack: fixStack(s.stackLayout),
+  topbar: fixTopbar(s.topbarLayout), pages: fixPages(s.pageLayouts) });
+const storageOf = (m) => ({ layout: m.layout, pieces: m.pieces, homeLayout: m.home, stackLayout: m.stack, topbarLayout: m.topbar, pageLayouts: m.pages });
+let M = modelFrom(D);
+
+// ---------------------------------------------------------------- render: put every element where the model says
+const ids = (el) => [...el.children].map((c) => c.dataset.id).filter(Boolean);
+const place = (el, order, els) => { for (const id of order) if (els[id]) el.append(els[id]); };
+const press = (sel, attr, v) => { for (const b of $$(sel + ' button')) b.setAttribute('aria-pressed', String(b.dataset[attr] === v)); };
+function renderAll() {
+  place(lists['#main'], M.layout.main, watchBlocks); place(lists['#side'], M.layout.sidebar, watchBlocks); place(lists['#hidden'], M.layout.hidden, watchBlocks);
+  for (const g of Object.keys(PIECES)) { place(blockPieces(g), M.pieces[g].order, pieceEls[g]); place(lists['#hid-' + g], M.pieces[g].hidden, pieceEls[g]); }
+  place(lists['#stackMain'], M.stack.order, stackBlocks); place(lists['#stackHidden'], M.stack.hidden, stackBlocks);
+  place(lists['#homeMain'], M.home.shown, homeBlocks); place(lists['#homeHidden'], M.home.hidden, homeBlocks);
+  for (const [z, sel] of [['left', '#tbLeft'], ['center', '#tbCenter'], ['right', '#tbRight'], ['hidden', '#tbHidden']]) place(lists[sel], M.topbar[z], tbEls);
+  for (const pg of Object.keys(PAGE_DEF)) for (const z of [...pageZones(pg), 'hidden']) place(lists[`#pg-${pg}-${z}`], M.pages[pg][z], pageEls[pg]);
+  const L = M.layout;
+  $('#page').classList.toggle('left', L.side === 'left');
+  $('#page').style.setProperty('--side', Math.round(L.width * 0.62) + 'px'); // the mock page is about 62% of a real one
+  for (const g of $$('.vgrid', watchBlocks.recommendations)) { g.style.setProperty('--cols', L.cols); g.classList.toggle('list', L.card === 'list'); }
+  $('#sideW').value = L.width; $('#sideWv').textContent = L.width + 'px';
+  $('#cols').value = L.cols; $('#colsv').textContent = L.cols;
+  press('#sidePos', 'side', L.side); press('#cardStyle', 'card', L.card);
+  const { side, width, cols, card: c, main, sidebar, hidden } = L;
+  press('#presets', 'preset', Object.entries(PRESETS).find(([, p]) => JSON.stringify(p) === JSON.stringify({ side, width, cols, card: c, main, sidebar, hidden }))?.[0] || '');
+  $('#stackTheater').setAttribute('aria-checked', String(!!M.stack.theater));
+  $('#stackNote').textContent = M.stack.theater ? ', and in theater mode' : '';
+  for (const pg of Object.keys(colsOut)) { const n = M.pages[pg].cols; $(`#cols-${pg}`).value = n || 1; colsOut[pg].textContent = n > 1 ? String(n) : 'Auto'; }
+  save();
+}
+// after any move: read every list back into the model, apply the rules (via the same fixers as loading), re-render
+function readAll() {
+  const m = { layout: { ...M.layout, main: ids(lists['#main']), sidebar: ids(lists['#side']), hidden: ids(lists['#hidden']) },
+    pieces: Object.fromEntries(Object.keys(PIECES).map((g) => [g, { order: ids(blockPieces(g)), hidden: ids(lists['#hid-' + g]) }])),
+    stack: { ...M.stack, order: ids(lists['#stackMain']), hidden: ids(lists['#stackHidden']) },
+    home: { shown: ids(lists['#homeMain']), hidden: ids(lists['#homeHidden']) },
+    topbar: { left: ids(lists['#tbLeft']), center: ids(lists['#tbCenter']), right: ids(lists['#tbRight']), hidden: ids(lists['#tbHidden']) },
+    pages: Object.fromEntries(Object.keys(PAGE_DEF).map((pg) => [pg, { ...M.pages[pg],
+      ...Object.fromEntries([...pageZones(pg), 'hidden'].map((z) => [z, ids(lists[`#pg-${pg}-${z}`])])) }])) };
+  M = modelFrom(storageOf(m));
+}
+function commit(moved) {
+  readAll(); renderAll();
+  if (moved) { moved.classList.remove('settle'); void moved.offsetWidth; moved.classList.add('settle'); }
+}
+
+// ---------------------------------------------------------------- dragging, hiding, restoring, keyboard moves
+const NO_HIDE = (el) => el.dataset.id === 'player' || el.classList.contains('anchor');
+for (const el of allLists()) {
+  const holdsPieces = el.dataset.group === 'blocks';
+  Sortable.create(el, {
+    group: el.dataset.group, animation: 180, easing: 'cubic-bezier(.2,.7,.2,1)', ghostClass: 'splice', chosenClass: 'lifted-item',
+    // block lists ignore drags that start on a piece (the piece's own row handles those)
+    filter: holdsPieces ? '.x, .px, .piece' : '.x, .px, .anchor', preventOnFilter: false,
+    onMove: (e) => {
+      const id = e.dragged.dataset.id, to = e.to;
+      if (NO_HIDE(e.dragged) && isTray(to)) return false;
+      if (e.related?.classList.contains('anchor') && e.willInsertAfter) return false; // nothing goes after the videos grid
+      if (to.dataset.group === 'pg-channel') return (id === 'banner') === (to.id.endsWith('-header') || isTray(to));
+      return true;
+    },
+    onStart: () => document.body.classList.add('dragging'),
+    onEnd: (e) => { document.body.classList.remove('dragging'); commit(e.item); }
+  });
+}
+const nameOf = (it) => (it.getAttribute('aria-label') || '').split(':')[0];
+function hideItem(it) {
+  if (!it || NO_HIDE(it)) return;
+  const tray = trayOf(it.parentElement.dataset.group); if (!tray) return;
+  tray.append(it); commit(); flashMsg(`Hidden: ${nameOf(it)}`);
+}
+function restoreItem(it) {
+  const g = it.parentElement.dataset.group, id = it.dataset.id;
+  let to;
+  if (g === 'blocks') to = lists['#side'];
+  else if (g === 'stack') to = lists['#stackMain'];
+  else if (g === 'home') {
+    to = lists['#homeMain'];
+    if (id !== 'recommended' && homeBlocks.recommended.parentElement === to) { homeBlocks.recommended.before(it); commit(it); it.focus(); return; }
+  } else if (g === 'tb') to = lists[{ left: '#tbLeft', center: '#tbCenter', right: '#tbRight' }[['left', 'center', 'right'].find((z) => D.topbarLayout[z].includes(id)) || 'right']];
+  else if (g.startsWith('p-')) to = blockPieces(g.slice(2));
+  else if (g.startsWith('pg-')) to = lists[`#pg-${g.slice(3)}-${id === 'banner' ? 'header' : 'inline'}`];
+  if (!to) return;
+  to.append(it); commit(it); it.focus(); flashMsg(`Shown: ${nameOf(it)}`);
+}
+document.addEventListener('click', (e) => {
+  const x = e.target.closest('.x, .px');
+  if (x) { e.preventDefault(); e.stopPropagation(); hideItem(x.closest('.block, .piece')); return; }
+  const chip = e.target.closest('.tray > .block, .tray > .piece');
+  if (chip) restoreItem(chip);
+});
+// keyboard: Alt+arrows move within a row or column, Alt+Shift+arrows move to the next one, Delete hides, Enter restores
+document.addEventListener('keydown', (e) => {
+  const it = e.target;
+  if (!it.matches?.('.block, .piece') || !it.parentElement?.dataset.group) return;
+  const lst = it.parentElement;
+  if (isTray(lst)) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); restoreItem(it); } return; }
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    e.preventDefault();
+    const next = it.nextElementSibling || it.previousElementSibling;
+    hideItem(it); (next?.matches('.block, .piece:not(.anchor)') ? next : null)?.focus();
+    return;
+  }
+  if (!e.altKey || !/^Arrow/.test(e.key)) return;
+  e.preventDefault();
+  const back = e.key === 'ArrowUp' || e.key === 'ArrowLeft';
+  if (e.shiftKey) {
+    const peers = allLists().filter((l) => l.dataset.group === lst.dataset.group && !isTray(l) && l.offsetParent);
+    const to = peers[(peers.indexOf(lst) + (back ? -1 : 1) + peers.length) % peers.length];
+    if (to && to !== lst) to.append(it);
+  } else if (back && it.previousElementSibling) it.previousElementSibling.before(it);
+  else if (!back && it.nextElementSibling && !it.nextElementSibling.classList.contains('anchor')) it.nextElementSibling.after(it);
+  commit(it); it.focus();
+  flashMsg(`Moved: ${nameOf(it)}`);
 });
 
-// home page mock: same block chrome (tag + hide button) as the watch page
-const homeLists = { shown: $('#homeMain'), hidden: $('#homeHidden') };
-const homeBlocks = {};
-for (const el of $('#tplHome').content.children) {
-  const b = el.cloneNode(true);
-  b.tabIndex = 0;
-  b.prepend(h('span', { className: 'tag' }, b.dataset.id),
-    h('button', { type: 'button', className: 'x', 'aria-label': `Hide ${HOME_NAMES[b.dataset.id]}`, title: 'Hide' }, '✕'));
-  homeBlocks[b.dataset.id] = b;
-}
-for (const [id, pct] of [['continue', [72, 35, 88, 20]], ['subs', [0, 0, 0, 0]]]) {
-  homeBlocks[id].querySelector('.strip').append(...pct.map((p, i) => {
-    const [a, z] = THUMBS[(i + (id === 'subs' ? 2 : 0)) % THUMBS.length];
-    return h('div', { style: `background:linear-gradient(135deg,${a},${z});--p:${p}%` }, id === 'subs' && i < 2 ? h('em', {}, 'New') : '');
-  }));
-}
-homeBlocks.recommended.querySelector('.grid').append(...[...grid.children].map((c) => c.cloneNode(true)));
-homeBlocks.recommended.style.setProperty('--cols', 4);
-
-
-// ---- narrow-window / theater mock: its own copies of the blocks (a node can only sit in one list)
-const STACK_DEFAULT = structuredClone(EYT_DEFAULTS.stackLayout);
-const PAGES_DEFAULT = structuredClone(EYT_DEFAULTS.pageLayouts);
-const stackLists = { order: $('#stackMain'), hidden: $('#stackHidden') };
-const stackBlocks = {};
-for (const [id, b] of Object.entries(blocks)) {
-  const c = b.cloneNode(true);
-  c.querySelectorAll('[data-pg="tweaks"], [data-pg="description"], .tabs').forEach((e) => e.remove());
-  for (const e of [c, ...c.querySelectorAll('[id], [aria-controls]')]) { e.removeAttribute('id'); e.removeAttribute('aria-controls'); }
-  stackBlocks[id] = c;
-}
-// ---- other pages: sections that can be hidden, and grid columns
-const PAGE_SECTIONS = {
-  subs: { title: 'Subscriptions', cols: true, items: [['shorts', 'Shorts'], ['watched', 'Videos you have already watched'],
-    ['upcoming', 'Upcoming premieres and streams'], ['live', 'Live streams']] },
-  search: { title: 'Search results', items: [['shorts', 'Shorts'], ['shelves', '"For you", "People also watched" and similar shelves'],
-    ['channels', 'Channel results'], ['playlists', 'Playlists and mixes']] },
-  channel: { title: 'Channel pages', cols: true, items: [['banner', 'Banner'], ['trailer', 'Channel trailer'], ['shorts', 'Shorts shelf']] }
-};
-
-let state, home, stack, pages, profiles = [], active = '', loaded = {};
-const layoutOf = () => { const { tweaks: _t, ...L } = state; return structuredClone(L); };
+// ---------------------------------------------------------------- saving + undo
+let profiles = [], active = '', loaded = {}, ready = false, saveTimer = 0;
 const cur = () => profiles.find((p) => p.id === active);
-
-// ---- saving: debounced (sync storage allows ~120 writes/min); every edit also lands in the active profile
-let saveTimer = 0, ready = false;
-const save = () => {
+function save() {
   if (!ready) return;
   snapshot();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flush, 300);
-};
-// writes only when an edit is pending: a blind write would put back settings the popup changed meanwhile
+}
+// writes only when an edit is pending, and only the layout keys (settings belong to the Settings panel)
 function flush() {
   if (!saveTimer || !ready) return;
   clearTimeout(saveTimer); saveTimer = 0;
-  const t = state.tweaks, layout = layoutOf();
-  Object.assign(cur(), { layout, homeLayout: structuredClone(home), stackLayout: structuredClone(stack), pageLayouts: structuredClone(pages) });
-  chrome.storage.sync.set({
-    layout, homeLayout: home, stackLayout: stack, pageLayouts: pages,
-    defaultSpeed: t.speed, musicSeparate: t.musicSeparate, musicSpeed: t.musicSpeed,
-    exempt: t.exempt, volume: t.volume, autoQuality: t.autoQuality, noAmbient: t.noAmbient,
-    pauseBlur: t.pauseBlur, pauseTitle: t.pauseTitle, ...eytProfilesPatch(profiles, [active]), activeProfile: active,
-    layoutV: 2 // studio layouts are already current: the bridge's one-time migration must not rearrange them
-  }, () => {
-    flash(chrome.runtime?.lastError ? 'Not saved: ' + chrome.runtime.lastError.message : 'Saved');
+  const data = structuredClone(storageOf(M));
+  Object.assign(cur(), data);
+  chrome.storage.sync.set({ ...data, ...eytProfilesPatch(profiles, [active]), activeProfile: active, layoutV: 2 }, () => {
+    const err = chrome.runtime?.lastError;
+    flashMsg(err ? 'Not saved: ' + err.message : 'Saved', err ? 'err' : 'rec');
     if (Array.isArray(loaded.profiles)) { chrome.storage.sync.remove('profiles'); delete loaded.profiles; } // first format of profiles
   });
 }
-
-// ---- undo / redo: snapshots of the four layouts (not the profile list or settings)
-let undoStack = [], redoStack = [], lastSnap = null, lastPush = 0, lastSlider = '';
-// set by slider input handlers: consecutive input from the same slider (one drag) is one undo step
-let sliding = '';
-const snapOf = () => JSON.stringify({ layout: layoutOf(), home, stack, pages });
+let undoStack = [], redoStack = [], lastSnap = null, lastPush = 0, lastSlider = '', sliding = '';
 function snapshot() {
-  const now = snapOf();
+  const now = JSON.stringify(M);
   if (now === lastSnap) return;
   if (lastSnap !== null) {
-    // one drag of a slider is one step
-    const sameDrag = sliding && sliding === lastSlider && Date.now() - lastPush < 1000;
+    const sameDrag = sliding && sliding === lastSlider && Date.now() - lastPush < 1000; // one slider drag is one step
     if (!sameDrag || !undoStack.length) undoStack.push(lastSnap);
-    if (undoStack.length > 50) undoStack.shift();
+    if (undoStack.length > 80) undoStack.shift();
     redoStack = [];
     lastPush = Date.now();
   }
@@ -130,14 +364,9 @@ function snapshot() {
   lastSnap = now;
   renderUndo();
 }
-function restore(json) {
-  const x = JSON.parse(json);
-  state = { ...x.layout, tweaks: state.tweaks }; home = x.home; stack = x.stack; pages = x.pages;
-  lastSnap = json;
-  renderAll();
-}
-const undo = () => { snapshot(); if (!undoStack.length) return; redoStack.push(lastSnap); restore(undoStack.pop()); renderUndo(); flash('Undone'); };
-const redo = () => { if (!redoStack.length) return; undoStack.push(lastSnap); restore(redoStack.pop()); renderUndo(); flash('Redone'); };
+const restoreSnap = (json) => { M = JSON.parse(json); lastSnap = json; renderAll(); };
+const undo = () => { snapshot(); if (!undoStack.length) return; redoStack.push(lastSnap); restoreSnap(undoStack.pop()); renderUndo(); flashMsg('Undone'); };
+const redo = () => { if (!redoStack.length) return; undoStack.push(lastSnap); restoreSnap(redoStack.pop()); renderUndo(); flashMsg('Redone'); };
 function renderUndo() { $('#undo').disabled = !undoStack.length; $('#redo').disabled = !redoStack.length; }
 $('#undo').onclick = undo;
 $('#redo').onclick = redo;
@@ -146,231 +375,109 @@ document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
 });
+let flashT;
+function flashMsg(msg, kind) {
+  const t = $('#tally');
+  $('#toast').textContent = msg;
+  t.classList.remove('rec', 'err'); void t.offsetWidth;
+  if (kind) t.classList.add(kind);
+  clearTimeout(flashT);
+  flashT = setTimeout(() => t.classList.remove('err'), 2600);
+}
 
-// ---- watch page
-function readLists() {
-  for (const k of ['main', 'sidebar', 'hidden']) state[k] = [...lists[k].children].map((b) => b.dataset.id);
-}
-function render() {
-  for (const k of ['main', 'sidebar', 'hidden']) for (const id of state[k]) blocks[id] && lists[k].append(blocks[id]);
-  const page = $('#page');
-  page.classList.toggle('left', state.side === 'left');
-  page.style.setProperty('--side', state.width + 'px');
-  blocks.recommendations.style.setProperty('--cols', state.cols);
-  blocks.recommendations.classList.toggle('list', state.card === 'list');
-  $('#sideW').value = state.width; $('#sideWv').textContent = state.width + 'px';
-  $('#cols').value = state.cols; $('#colsv').textContent = state.cols;
-  for (const b of document.querySelectorAll('#sidePos button')) b.setAttribute('aria-pressed', b.dataset.side === state.side);
-  for (const b of document.querySelectorAll('#cardStyle button')) b.setAttribute('aria-pressed', b.dataset.card === state.card);
-  const match = Object.entries(PRESETS).find(([, p]) => JSON.stringify(p) === JSON.stringify(layoutOf()))?.[0];
-  renderTweaks();
-  for (const b of document.querySelectorAll('#presets button')) b.setAttribute('aria-pressed', b.dataset.preset === match);
-  save();
-}
-// ---- home page
-function readHome() {
-  for (const k of ['shown', 'hidden']) home[k] = [...homeLists[k].children].map((b) => b.dataset.id);
-  // Recommended is YouTube's endless feed: nothing can sit below it
-  const i = home.shown.indexOf('recommended');
-  if (i >= 0 && i !== home.shown.length - 1) home.shown.push(...home.shown.splice(i, 1));
-}
-function renderHome() {
-  for (const k of ['shown', 'hidden']) for (const id of home[k]) homeBlocks[id] && homeLists[k].append(homeBlocks[id]);
-}
-const homeChanged = () => { readHome(); renderHome(); save(); };
-// ---- narrow windows / theater
-function readStack() { for (const k of ['order', 'hidden']) stack[k] = [...stackLists[k].children].map((b) => b.dataset.id); }
-function renderStack() {
-  for (const k of ['order', 'hidden']) for (const id of stack[k]) stackBlocks[id] && stackLists[k].append(stackBlocks[id]);
-  $('#stackTheater').setAttribute('aria-checked', String(!!stack.theater));
-}
-const stackChanged = () => { readStack(); renderStack(); save(); };
-$('#stackTheater').onclick = () => { stack.theater = !stack.theater; renderStack(); save(); };
-// ---- other pages
-// slider position 1 = "Auto" (YouTube decides), stored as 0
-const colsLabel = (n) => (n > 1 ? String(n) : 'Auto');
-function renderPages() {
-  $('#pagesGrid').replaceChildren(...Object.entries(PAGE_SECTIONS).map(([pg, def]) => {
-    const P = pages[pg];
-    return h('section', { className: 'pg-card' }, h('h3', {}, def.title),
-      def.cols ? h('div', { className: 'pg-row' }, h('label', { htmlFor: `cols-${pg}` }, 'Columns'),
-        h('input', { type: 'range', id: `cols-${pg}`, min: 1, max: 8, step: 1, value: P.cols || 1, 'data-page': pg }),
-        h('span', { className: 'val' }, colsLabel(P.cols))) : '',
-      h('p', { className: 'pg-hint' }, 'Show:'),
-      ...def.items.map(([sec, label]) => h('div', { className: 'pg-row' }, h('span', {}, label),
-        h('button', { type: 'button', className: 'sw', role: 'switch', 'aria-label': `${def.title}: ${label}`,
-          'aria-checked': String(!P.hide.includes(sec)), 'data-page': pg, 'data-sec': sec }))));
-  }));
-}
-$('#pagesGrid').addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-sec]'); if (!b) return;
-  const P = pages[b.dataset.page], sec = b.dataset.sec;
-  P.hide = P.hide.includes(sec) ? P.hide.filter((x) => x !== sec) : [...P.hide, sec];
-  renderPages(); save();
-  $(`#pagesGrid button[data-page="${b.dataset.page}"][data-sec="${sec}"]`)?.focus();
-});
+// ---------------------------------------------------------------- view controls
+const update = (patch) => { Object.assign(M.layout, patch); renderAll(); };
+$('#presets').onclick = (e) => { const p = e.target.closest('button')?.dataset.preset; if (p) { M.layout = structuredClone(PRESETS[p]); renderAll(); flashMsg(`Preset: ${p}`); } };
+$('#sidePos').onclick = (e) => { const v = e.target.closest('button')?.dataset.side; if (v) update({ side: v }); };
+$('#cardStyle').onclick = (e) => { const v = e.target.closest('button')?.dataset.card; if (v) update({ card: v }); };
+$('#sideW').oninput = (e) => { sliding = 'sideW'; update({ width: +e.target.value }); };
+$('#cols').oninput = (e) => { sliding = 'cols'; update({ cols: +e.target.value }); };
+$('#stackTheater').onclick = () => { M.stack.theater = !M.stack.theater; renderAll(); };
 $('#pagesGrid').addEventListener('input', (e) => {
   const r = e.target.closest('input[type=range][data-page]'); if (!r) return;
   sliding = 'cols-' + r.dataset.page;
-  pages[r.dataset.page].cols = +r.value > 1 ? +r.value : 0;
-  r.nextElementSibling.textContent = colsLabel(+r.value);
-  save();
+  M.pages[r.dataset.page].cols = +r.value > 1 ? +r.value : 0;
+  renderAll();
 });
-const renderAll = () => { renderHome(); renderStack(); renderPages(); render(); };
-
-// ---- views
 let view = 'watch';
-const VIEWS = ['watch', 'stack', 'home', 'pages'];
+$('#reset').onclick = () => {
+  const d = modelFrom(D);
+  if (view === 'watch') { M.layout = structuredClone(PRESETS.experimental); M.pieces = d.pieces; }
+  else if (view === 'stack') M.stack = d.stack;
+  else if (view === 'home') M.home = d.home;
+  else if (view === 'topbar') M.topbar = d.topbar;
+  else M.pages = d.pages;
+  renderAll(); flashMsg('Page reset');
+};
 function showView(v) {
   view = VIEWS.includes(v) ? v : 'watch';
   for (const x of VIEWS) document.body.classList.toggle('view-' + x, x === view);
-  for (const b of document.querySelectorAll('#pageSel button')) b.setAttribute('aria-pressed', b.dataset.view === view);
+  for (const b of $$('#pageSel button')) b.setAttribute('aria-pressed', String(b.dataset.view === view));
+  $('#url').textContent = URLS[view];
   try { history.replaceState(null, '', view === 'watch' ? location.pathname : '#' + view); } catch {}
 }
-$('#pageSel').onclick = (e) => e.target.dataset.view && showView(e.target.dataset.view);
+$('#pageSel').onclick = (e) => { const v = e.target.closest('button')?.dataset.view; if (v) showView(v); };
 showView(location.hash.slice(1));
 
-for (const k of ['shown', 'hidden']) {
-  Sortable.create(homeLists[k], {
-    group: 'home', animation: 150, filter: '.x', preventOnFilter: false,
-    onStart: () => document.body.classList.add('dragging'),
-    onEnd: () => { document.body.classList.remove('dragging'); homeChanged(); }
-  });
-}
-homeLists.hidden.addEventListener('click', (e) => {
-  const b = e.target.closest('.block'); if (!b || e.target.closest('.x')) return;
-  // a restored section goes back above Recommended (YouTube's feed), or at the end when that is hidden
-  const rec = homeBlocks.recommended;
-  b !== rec && rec.parentNode === homeLists.shown ? rec.before(b) : homeLists.shown.append(b);
-  homeChanged();
-});
-for (const k of ['order', 'hidden']) {
-  Sortable.create(stackLists[k], {
-    group: 'stack', animation: 150, filter: '.x', preventOnFilter: false,
-    onMove: (e) => !(e.dragged.dataset.id === 'player' && e.to !== stackLists.order),
-    onStart: () => document.body.classList.add('dragging'),
-    onEnd: () => { document.body.classList.remove('dragging'); stackChanged(); }
-  });
-}
-stackLists.hidden.addEventListener('click', (e) => {
-  const b = e.target.closest('.block'); if (!b || e.target.closest('.x')) return;
-  stackLists.order.append(b); stackChanged();
-});
-const tw = (id) => blocks.comments.querySelector('#' + id);
-const fmtX = (n) => (+n).toString() + '×';
-function renderTweaks() {
-  const t = state.tweaks;
-  tw('twSpeed').value = t.speed; tw('twSpeedV').textContent = fmtX(t.speed);
-  tw('twSpeedChips').replaceChildren(...[1, 1.25, 1.5, 2, 3].map((v) =>
-    h('button', { type: 'button', 'data-v': v, 'aria-pressed': v === t.speed }, fmtX(v))));
-  tw('twMusic').setAttribute('aria-checked', t.musicSeparate);
-  tw('twMusicSpeed').value = t.musicSpeed; tw('twMusicSpeedV').textContent = fmtX(t.musicSpeed);
-  tw('twMusicRow').classList.toggle('tw-dim', !t.musicSeparate);
-  tw('twMusicSpeed').classList.toggle('tw-dim', !t.musicSeparate);
-  const list = tw('twList'); list.textContent = '';
-  for (const name of t.exempt) {
-    const chip = document.createElement('span'); chip.textContent = name;
-    const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.dataset.rm = name; x.setAttribute('aria-label', 'Remove ' + name);
-    chip.append(x); list.append(chip);
+// ---------------------------------------------------------------- the studio's own panels: three docks, drag + fold
+const local = chrome.storage.local || { get: (d, cb) => cb(d), set: () => {} };
+const DOCKS = { left: $('#dockLeft'), bottom: $('#dockBottom'), right: $('#dockRight') };
+const PANELS = Object.fromEntries($$('#panelStore .panel').map((p) => [p.dataset.panel, p]));
+const WS_DEFAULT = { left: [], right: ['layout', 'hidden'], bottom: ['profile', 'settings'], folded: [] };
+let ws = structuredClone(WS_DEFAULT);
+function placePanels() {
+  const seen = new Set();
+  for (const d of ['left', 'right', 'bottom']) for (const id of ws[d] || []) if (PANELS[id] && !seen.has(id)) { seen.add(id); DOCKS[d].append(PANELS[id]); }
+  for (const id of Object.keys(PANELS)) if (!seen.has(id)) DOCKS[['left', 'right', 'bottom'].find((d) => WS_DEFAULT[d].includes(id)) || 'right'].append(PANELS[id]);
+  for (const [id, p] of Object.entries(PANELS)) {
+    const f = (ws.folded || []).includes(id);
+    p.classList.toggle('folded', f);
+    p.querySelector('.fold').setAttribute('aria-expanded', String(!f));
   }
-  tw('twVol').value = t.volume; tw('twVolV').textContent = t.volume + '%';
-  tw('twQual').setAttribute('aria-checked', t.autoQuality);
-  tw('twAmb').setAttribute('aria-checked', t.noAmbient);
-  tw('twBlur').setAttribute('aria-checked', t.pauseBlur);
-  tw('twTitle').setAttribute('aria-checked', t.pauseTitle);
 }
-const setT = (patch) => { Object.assign(state.tweaks, patch); render(); };
-const twPage = blocks.comments.querySelector('.tw');
-twPage.addEventListener('input', (e) => {
-  const id = e.target.id;
-  if (id === 'twSpeed') setT({ speed: +e.target.value });
-  if (id === 'twMusicSpeed') setT({ musicSpeed: +e.target.value });
-  if (id === 'twVol') setT({ volume: +e.target.value });
-});
-twPage.addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.v) setT({ speed: +b.dataset.v });
-  else if (b.dataset.rm) setT({ exempt: state.tweaks.exempt.filter((n) => n !== b.dataset.rm) });
-  else if (b.id === 'twMusic') setT({ musicSeparate: !state.tweaks.musicSeparate });
-  else if (b.id === 'twQual') setT({ autoQuality: !state.tweaks.autoQuality });
-  else if (b.id === 'twAmb') setT({ noAmbient: !state.tweaks.noAmbient });
-  else if (b.id === 'twBlur') setT({ pauseBlur: !state.tweaks.pauseBlur });
-  else if (b.id === 'twTitle') setT({ pauseTitle: !state.tweaks.pauseTitle });
-});
-tw('twForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = tw('twAdd').value.trim();
-  if (name && !state.tweaks.exempt.some((n) => n.toLowerCase() === name.toLowerCase())) setT({ exempt: [...state.tweaks.exempt, name] });
-  tw('twAdd').value = '';
-});
-function showPage(p) {
-  for (const t of blocks.comments.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', t.dataset.page === p);
-  for (const g of blocks.comments.querySelectorAll('.pg')) g.hidden = g.dataset.pg !== p;
+function readPanels() {
+  ws = { ...Object.fromEntries(Object.entries(DOCKS).map(([d, el]) => [d, [...el.children].map((p) => p.dataset.panel)])),
+    folded: Object.keys(PANELS).filter((id) => PANELS[id].classList.contains('folded')) };
+  local.set({ studioWorkspace: ws });
 }
-const update = (patch) => { Object.assign(state, patch); render(); };
+for (const el of Object.values(DOCKS)) {
+  Sortable.create(el, { group: 'panels', handle: '.grip', animation: 220, easing: 'cubic-bezier(.2,.7,.2,1)', ghostClass: 'panel-ghost', chosenClass: 'lifted',
+    onStart: () => document.body.classList.add('moving-panel'),
+    onEnd: () => { document.body.classList.remove('moving-panel'); readPanels(); } });
+}
+for (const p of Object.values(PANELS)) {
+  const fold = p.querySelector('.fold');
+  fold.onclick = () => { p.classList.toggle('folded'); fold.setAttribute('aria-expanded', String(!p.classList.contains('folded'))); readPanels(); };
+  // grip keys: up / down within the dock, left / right to the next dock
+  p.querySelector('.grip').addEventListener('keydown', (e) => {
+    if (!/^Arrow/.test(e.key)) return;
+    e.preventDefault();
+    const order = ['left', 'bottom', 'right'], d = order.indexOf(p.parentElement.dataset.dock);
+    if (e.key === 'ArrowUp' && p.previousElementSibling) p.previousElementSibling.before(p);
+    else if (e.key === 'ArrowDown' && p.nextElementSibling) p.nextElementSibling.after(p);
+    else if (e.key === 'ArrowLeft' && d > 0) DOCKS[order[d - 1]].append(p);
+    else if (e.key === 'ArrowRight' && d < 2) DOCKS[order[d + 1]].append(p);
+    else return;
+    readPanels(); p.querySelector('.grip').focus();
+    flashMsg(`${p.querySelector('h2').textContent.split(':')[0]} panel: ${p.parentElement.dataset.dock} dock`);
+  });
+}
+$('#resetPanels').onclick = () => { ws = structuredClone(WS_DEFAULT); placePanels(); readPanels(); flashMsg('Panels reset'); };
+placePanels();
+local.get({ studioWorkspace: null }, (r) => { if (r?.studioWorkspace) { ws = r.studioWorkspace; placePanels(); } });
 
-for (const k of ['main', 'sidebar', 'hidden']) {
-  Sortable.create(lists[k], {
-    group: 'blocks', animation: 150, filter: '.x, .tw, .tabs', preventOnFilter: false,
-    onMove: (e) => !(e.dragged.dataset.id === 'player' && e.to !== lists.main),
-    onStart: () => document.body.classList.add('dragging'),
-    onEnd: () => { document.body.classList.remove('dragging'); readLists(); render(); }
-  });
-}
-document.addEventListener('click', (e) => {
-  const tab = e.target.closest('.tabs button');
-  if (tab) { showPage(tab.dataset.page); return; }
-  const d = e.target.closest('.desc-btn');
-  if (d && !d.closest('#hidden, #stackMain, #stackHidden')) {
-    const panel = blocks.comments;
-    if (panel.closest('#hidden')) { lists.sidebar.append(panel); readLists(); render(); }
-    showPage('description');
-    panel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
-    panel.classList.add('flash-panel');
-    setTimeout(() => panel.classList.remove('flash-panel'), 700);
-    return;
-  }
-  const x = e.target.closest('.x'); if (!x) return;
-  const b = x.closest('.block');
-  if (homeLists.shown.contains(b)) { homeLists.hidden.append(b); homeChanged(); return; }
-  if (b.dataset.id === 'player') return;
-  if (stackLists.order.contains(b)) { stackLists.hidden.append(b); stackChanged(); return; }
-  lists.hidden.append(b); readLists(); render();
-});
-lists.hidden.addEventListener('click', (e) => {
-  const b = e.target.closest('.block'); if (!b || e.target.closest('.x')) return;
-  lists.sidebar.append(b); readLists(); render();
-});
-$('#presets').onclick = (e) => { const p = e.target.dataset.preset; if (p) { state = { ...structuredClone(PRESETS[p]), tweaks: state.tweaks }; render(); } };
-$('#sidePos').onclick = (e) => e.target.dataset.side && update({ side: e.target.dataset.side });
-$('#cardStyle').onclick = (e) => e.target.dataset.card && update({ card: e.target.dataset.card });
-$('#sideW').oninput = (e) => { sliding = 'sideW'; update({ width: +e.target.value }); };
-$('#cols').oninput = (e) => { sliding = 'cols'; update({ cols: +e.target.value }); };
-$('#reset').onclick = () => {
-  if (view === 'home') home = structuredClone(HOME_DEFAULT);
-  else if (view === 'stack') stack = structuredClone(STACK_DEFAULT);
-  else if (view === 'pages') pages = structuredClone(PAGES_DEFAULT);
-  else state = { ...structuredClone(PRESETS.experimental), tweaks: state.tweaks };
-  renderAll();
-  flash('Layout reset');
+// light / dark (follows the system until you choose)
+const THEME = 'eyt-studio-theme';
+try { const t = localStorage.getItem(THEME); if (t) document.documentElement.dataset.theme = t; } catch {}
+$('#theme').onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem(THEME, r.dataset.theme); } catch {}
 };
 
-// ---- validation (stored values, imported files)
-const ALL_IDS = Object.keys(NAMES);
+// ---------------------------------------------------------------- profiles
 const strs = (a) => Array.isArray(a) && a.every((x) => typeof x === 'string');
-const validLayout = (L) => !!L && strs(L.main) && strs(L.sidebar || []) && strs(L.hidden || [])
-  && ALL_IDS.every((id) => [...L.main, ...(L.sidebar || []), ...(L.hidden || [])].includes(id)) && L.main.includes('player');
-const validHome = (H) => !!H && strs(H.shown) && strs(H.hidden || []) && Object.keys(HOME_NAMES).every((id) => [...H.shown, ...(H.hidden || [])].includes(id));
-const validStack = (S) => !!S && strs(S.order) && strs(S.hidden || []) && S.order.includes('player') && ALL_IDS.every((id) => [...S.order, ...(S.hidden || [])].includes(id));
-const validPages = (P) => !!P && Object.keys(PAGE_SECTIONS).every((k) => P[k] && strs(P[k].hide));
-const fixLayout = (L) => validLayout(L) ? { side: L.side === 'left' ? 'left' : 'right', width: Math.min(Math.max(+L.width || 400, 300), 560),
-  cols: Math.min(Math.max(+L.cols || 3, 1), 5), card: L.card === 'list' ? 'list' : 'grid',
-  main: [...L.main], sidebar: [...(L.sidebar || [])], hidden: [...(L.hidden || [])] } : undefined;
-const fixHome = (H) => validHome(H) ? { shown: [...H.shown], hidden: [...(H.hidden || [])] } : undefined;
-const fixStack = (S) => validStack(S) ? { order: [...S.order], hidden: [...(S.hidden || [])], theater: !!S.theater } : undefined;
-const fixPages = (P) => validPages(P) ? Object.fromEntries(Object.keys(PAGE_SECTIONS).map((k) =>
-  [k, { ...(PAGE_SECTIONS[k].cols ? { cols: +P[k].cols >= 2 ? Math.min(+P[k].cols, 8) : 0 } : {}), hide: P[k].hide.filter((x) => PAGE_SECTIONS[k].items.some(([s]) => s === x)) }])) : undefined;
-// settings in an imported profile: only known keys, each of the type its default has
 const fixSettings = (o) => {
   if (!o || typeof o !== 'object') return undefined;
   const r = {};
@@ -387,39 +494,31 @@ const uniqueName = (n) => {
   if (!taken(n)) return n;
   for (let i = 2; ; i++) { const c = `${n.slice(0, 25)} (${i})`; if (!taken(c)) return c; }
 };
-
-// ---- profiles
 function renderProfiles() {
   $('#profSel').replaceChildren(...profiles.map((p) => h('option', { value: p.id, selected: p.id === active }, p.name)));
   $('#profDel').disabled = profiles.length < 2;
   $('#profNew').disabled = profiles.length >= EYT_PROFILE_MAX;
-  $('#profNew').title = profiles.length >= EYT_PROFILE_MAX ? `Up to ${EYT_PROFILE_MAX} profiles` : 'Save the current layout as a new profile';
+  $('#profNew').title = profiles.length >= EYT_PROFILE_MAX ? `Up to ${EYT_PROFILE_MAX} profiles` : 'Save the current layouts as a new profile';
   const p = cur();
   $('#profName2').textContent = p.name;
   $('#profSettings').checked = !!p.settings;
   $('#profMusic').checked = !!p.auto?.music;
   $('#profChannels').value = (p.auto?.channels || []).join('\n');
 }
-// load everything from storage (first open, and after any profile switch)
 function loadAll(s) {
   loaded = s;
   ({ profiles, active } = eytProfilesFrom(s));
   ready = false;
-  state = { ...(fixLayout(s.layout) || structuredClone(PRESETS.experimental)),
-    tweaks: { speed: s.defaultSpeed, musicSeparate: s.musicSeparate, musicSpeed: s.musicSpeed, exempt: s.exempt,
-      volume: s.volume, autoQuality: s.autoQuality, noAmbient: s.noAmbient, pauseBlur: s.pauseBlur !== false, pauseTitle: s.pauseTitle !== false } };
-  home = fixHome(s.homeLayout) || structuredClone(HOME_DEFAULT);
-  stack = fixStack(s.stackLayout) || structuredClone(STACK_DEFAULT);
-  pages = fixPages(s.pageLayouts) || structuredClone(PAGES_DEFAULT);
+  M = modelFrom(s);
   renderAll(); renderProfiles();
   undoStack = []; redoStack = []; lastSnap = null; // undo doesn't cross profiles
   ready = true;
   snapshot();
-  eytBuildForm($('#form'), s, SKIP);
+  eytBuildForm($('#form'), s);
 }
 function switchTo(id, msg) {
   flush();
-  eytGetAll((s) => eytSwitchProfile(s, id, () => eytGetAll((now) => { loadAll(now); flash(msg || `Profile: ${cur().name}`); })));
+  eytGetAll((s) => eytSwitchProfile(s, id, () => eytGetAll((now) => { loadAll(now); flashMsg(msg || `Profile: ${cur().name}`, 'rec'); })));
 }
 $('#profSel').onchange = (e) => switchTo(e.target.value);
 let profMode = '';
@@ -441,13 +540,13 @@ $('#profForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const inp = $('#profName'), name = cleanName(inp.value);
   const clash = profiles.some((p) => p.name.toLowerCase() === name.toLowerCase() && !(profMode === 'rename' && p.id === active));
-  if (!name || clash) { inp.setAttribute('aria-invalid', 'true'); flash(clash ? 'A profile with that name exists' : 'Name the profile'); return; }
+  if (!name || clash) { inp.setAttribute('aria-invalid', 'true'); flashMsg(clash ? 'That name is taken' : 'Name the profile', 'err'); return; }
   closeProfForm();
-  if (profMode === 'rename') { cur().name = name; renderProfiles(); chrome.storage.sync.set(eytProfilesPatch(profiles, [active]), () => flash('Renamed')); return; }
+  if (profMode === 'rename') { cur().name = name; renderProfiles(); chrome.storage.sync.set(eytProfilesPatch(profiles, [active]), () => flashMsg('Renamed', 'rec')); return; }
   // a new profile starts as a copy of the current layouts (not the settings)
   flush();
   const id = eytNewId();
-  profiles.push({ id, name, layout: layoutOf(), homeLayout: structuredClone(home), stackLayout: structuredClone(stack), pageLayouts: structuredClone(pages) });
+  profiles.push({ id, name, ...structuredClone(storageOf(M)) });
   chrome.storage.sync.set(eytProfilesPatch(profiles, [active, id]), () => switchTo(id, `Created ${name}`));
 });
 $('#profDel').onclick = () => {
@@ -458,47 +557,40 @@ $('#profDel').onclick = () => {
     const patch = eytSwitchPatch(s, to);
     patch.profileIndex = patch.profileIndex.filter((e) => e.id !== del);
     delete patch[EYT_PROFILE_ITEM + del];
-    chrome.storage.sync.set(patch, () => chrome.storage.sync.remove(EYT_PROFILE_ITEM + del, () => eytGetAll((now) => { loadAll(now); flash('Profile deleted'); })));
+    chrome.storage.sync.set(patch, () => chrome.storage.sync.remove(EYT_PROFILE_ITEM + del, () => eytGetAll((now) => { loadAll(now); flashMsg('Profile deleted', 'rec'); })));
   });
 };
-// this profile also carries its own settings (playback, SponsorBlock, filters, clean UI)
 $('#profSettings').onchange = (e) => {
   flush();
   const p = cur(), on = e.target.checked;
   eytGetAll((s) => {
     const patch = {};
-    if (on) {
-      p.settings = eytPick(s, EYT_PROFILE_SETTINGS);
-      // the values other profiles go back to: what was in force before this profile took its own
-      if (!s.sharedSettings) patch.sharedSettings = p.settings;
-    } else delete p.settings;
-    chrome.storage.sync.set({ ...patch, ...eytProfilesPatch(profiles, [p.id]) }, () => flash(on ? 'Settings now saved with this profile' : 'Settings shared again'));
+    if (on) { p.settings = eytPick(s, EYT_PROFILE_SETTINGS); if (!s.sharedSettings) patch.sharedSettings = p.settings; } else delete p.settings;
+    chrome.storage.sync.set({ ...patch, ...eytProfilesPatch(profiles, [p.id]) }, () => flashMsg(on ? 'Settings now kept with this profile' : 'Settings shared again', 'rec'));
   });
 };
-// automatic switching rules
 const saveAuto = () => {
   const p = cur();
   p.auto = { music: $('#profMusic').checked, channels: $('#profChannels').value.split('\n').map((c) => c.trim()).filter(Boolean).slice(0, 50) };
   if (!p.auto.music && !p.auto.channels.length) delete p.auto;
   flush();
-  chrome.storage.sync.set(eytProfilesPatch(profiles, [p.id]), () => flash('Saved'));
+  chrome.storage.sync.set(eytProfilesPatch(profiles, [p.id]), () => flashMsg('Saved', 'rec'));
 };
 $('#profMusic').onchange = saveAuto;
 $('#profChannels').onchange = saveAuto;
-// export / import
 $('#profExport').onclick = () => {
   flush();
   eytGetAll((s) => {
-    const { profiles: list, active: a } = eytProfilesFrom(s);
-    const out = list.map(({ id, ...p }) => {
+    const { profiles: all, active: a } = eytProfilesFrom(s);
+    const out = all.map(({ id, ...p }) => {
       if (id === a) { Object.assign(p, eytPick(s, EYT_LAYOUT_KEYS)); if (p.settings) p.settings = eytPick(s, EYT_PROFILE_SETTINGS); }
       return p;
     });
-    const json = JSON.stringify({ format: 'eliteyt-profiles', version: 1, exported: new Date().toISOString(), profiles: out }, null, 2);
+    const json = JSON.stringify({ format: 'eliteyt-profiles', version: 2, exported: new Date().toISOString(), profiles: out }, null, 2);
     const a2 = h('a', { href: URL.createObjectURL(new Blob([json], { type: 'application/json' })), download: `eliteyt-profiles-${new Date().toISOString().slice(0, 10)}.json` });
     document.body.append(a2); a2.click(); a2.remove();
     setTimeout(() => URL.revokeObjectURL(a2.href), 10e3);
-    flash(`Exported ${out.length} profile${out.length > 1 ? 's' : ''}`);
+    flashMsg(`Exported ${out.length} profile${out.length > 1 ? 's' : ''}`, 'rec');
   });
 };
 $('#profImport').onclick = () => $('#profFile').click();
@@ -506,42 +598,35 @@ $('#profFile').onchange = async (e) => {
   const f = e.target.files[0]; e.target.value = '';
   if (!f) return;
   let data;
-  try { data = JSON.parse(await f.text()); } catch { flash('That file is not valid JSON'); return; }
-  const list = Array.isArray(data?.profiles) ? data.profiles : typeof data?.name === 'string' ? [data] : null;
-  if (!list) { flash('Not an EliteYT profile file'); return; }
+  try { data = JSON.parse(await f.text()); } catch { flashMsg('That file is not valid JSON', 'err'); return; }
+  const raws = Array.isArray(data?.profiles) ? data.profiles : typeof data?.name === 'string' ? [data] : null;
+  if (!raws) { flashMsg('Not an EliteYT profile file', 'err'); return; }
   flush();
-  const ids = []; let skipped = 0;
-  for (const raw of list) {
+  const added = []; let skipped = 0;
+  const pick = (raw, k, fix) => (raw[k] && typeof raw[k] === 'object' ? fix(raw[k]) : undefined);
+  for (const raw of raws) {
     const name = cleanName(raw?.name);
     if (!name || profiles.length >= EYT_PROFILE_MAX) { skipped++; continue; }
-    const p = { id: eytNewId(), name: uniqueName(name), layout: fixLayout(raw.layout), homeLayout: fixHome(raw.homeLayout),
-      stackLayout: fixStack(raw.stackLayout), pageLayouts: fixPages(raw.pageLayouts), settings: fixSettings(raw.settings), auto: fixAuto(raw.auto) };
+    const p = { id: eytNewId(), name: uniqueName(name),
+      // a watch layout only counts if it names real blocks
+      layout: raw.layout && strs(raw.layout.main) && raw.layout.main.length && raw.layout.main.every((x) => x in NAMES) ? fixLayout(raw.layout) : undefined,
+      homeLayout: pick(raw, 'homeLayout', fixHome), stackLayout: pick(raw, 'stackLayout', fixStack), pageLayouts: pick(raw, 'pageLayouts', fixPages),
+      pieces: pick(raw, 'pieces', fixPieces), topbarLayout: pick(raw, 'topbarLayout', fixTopbar), settings: fixSettings(raw.settings), auto: fixAuto(raw.auto) };
     for (const k in p) if (p[k] === undefined) delete p[k];
-    profiles.push(p); ids.push(p.id);
+    profiles.push(p); added.push(p.id);
   }
-  if (!ids.length) { flash(skipped ? `Nothing imported (limit is ${EYT_PROFILE_MAX} profiles)` : 'No profiles in that file'); return; }
-  chrome.storage.sync.set(eytProfilesPatch(profiles, ids), () => {
+  if (!added.length) { flashMsg(skipped ? `Nothing imported (limit is ${EYT_PROFILE_MAX} profiles)` : 'No profiles in that file', 'err'); return; }
+  chrome.storage.sync.set(eytProfilesPatch(profiles, added), () => {
     renderProfiles();
-    flash(`Imported ${ids.length} profile${ids.length > 1 ? 's' : ''}${skipped ? `, skipped ${skipped}` : ''}`);
+    flashMsg(`Imported ${added.length} profile${added.length > 1 ? 's' : ''}${skipped ? `, skipped ${skipped}` : ''}`, 'rec');
   });
 };
-// another page (popup, YouTube tab, keyboard shortcut) switched profiles or changed a setting while this one is open
-const TWEAK_KEYS = { defaultSpeed: 'speed', musicSeparate: 'musicSeparate', musicSpeed: 'musicSpeed', exempt: 'exempt', volume: 'volume',
-  autoQuality: 'autoQuality', noAmbient: 'noAmbient', pauseBlur: 'pauseBlur', pauseTitle: 'pauseTitle' };
+// another page (YouTube tab, toolbar menu, keyboard shortcut) switched profiles, or a setting changed elsewhere
 chrome.storage.onChanged?.addListener((ch, area) => {
   if (area !== 'sync' || !ready) return;
   if (ch.activeProfile && ch.activeProfile.newValue !== active) { eytGetAll(loadAll); return; }
-  let tweaked = false;
-  for (const [k, t] of Object.entries(TWEAK_KEYS)) {
-    if (!ch[k] || JSON.stringify(ch[k].newValue) === JSON.stringify(state.tweaks[t])) continue;
-    state.tweaks[t] = ch[k].newValue ?? EYT_DEFAULTS[k];
-    tweaked = true;
-  }
-  if (tweaked) renderTweaks();
+  const settingChanged = Object.keys(ch).some((k) => k in EYT_DEFAULTS && !EYT_LAYOUT_KEYS.includes(k));
+  if (settingChanged && !$('#form').contains(document.activeElement)) eytGetAll((s) => eytBuildForm($('#form'), s));
 });
 
-let tt;
-const flash = (msg) => { $('#toast').textContent = msg; clearTimeout(tt); tt = setTimeout(() => { $('#toast').textContent = ''; }, 2500); };
-
-const SKIP = ['autoQuality', 'noAmbient', 'pauseBlur', 'pauseTitle', 'musicSeparate', 'defaultSpeed', 'musicSpeed', 'volume', 'exempt'];
 eytGetAll(loadAll);

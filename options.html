@@ -6,275 +6,32 @@
 <title>EliteYT Layout Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-[hidden] { display: none !important; }
-/* Layout: tool bar on top, a mock watch page as the canvas, a "hidden" tray below. Blocks drag between three lists. */
-:root {
-  --bg: #f3f2f0; --surface: #ffffff; --sunk: #e9e7e4; --line: #d9d6d1;
-  --fg: #1b1a19; --muted: #6d6a65; --accent: #d4352b; --accent-soft: #fbe3e1; --skel: #e4e1dc; --skel-2: #d5d1cb;
-  --yt-chip: #0000000d; --yt-chip-hover: #0000001a; --yt-on-bg: #0f0f0f; --yt-on-fg: #ffffff; --yt-box: #0000000d; --yt-link: #065fd4; --yt-sub: #606060;
-  --yt: "Roboto", "Arial", sans-serif;
-  --ui: "Onest", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #121212; --surface: #1c1b1b; --sunk: #0c0c0c; --line: #333130;
-  --fg: #f0eeeb; --muted: #9b9792; --accent: #ff5a4f; --accent-soft: #3a1c1a; --skel: #2c2a29; --skel-2: #3a3836;
-  --yt-chip: #ffffff1a; --yt-chip-hover: #ffffff33; --yt-on-bg: #f1f1f1; --yt-on-fg: #0f0f0f; --yt-box: #ffffff1a; --yt-link: #3ea6ff; --yt-sub: #aaaaaa; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #121212; --surface: #1c1b1b; --sunk: #0c0c0c; --line: #333130;
-  --fg: #f0eeeb; --muted: #9b9792; --accent: #ff5a4f; --accent-soft: #3a1c1a; --skel: #2c2a29; --skel-2: #3a3836;
-  --yt-chip: #ffffff1a; --yt-chip-hover: #ffffff33; --yt-on-bg: #f1f1f1; --yt-on-fg: #0f0f0f; --yt-box: #ffffff1a; --yt-link: #3ea6ff; --yt-sub: #aaaaaa; color-scheme: dark }
-
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font: 14px/1.45 var(--ui);
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
-.wrap { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-
-header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
-h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
-h1 span { color: var(--accent); }
-.lede { margin: 0; color: var(--muted); }
-
-.bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 12px 14px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
-.group > .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.seg button { border: 0; background: transparent; color: var(--fg); font: 500 13px var(--ui); padding: 6px 10px; cursor: pointer; }
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
-input[type=range] { accent-color: var(--accent); width: 120px; }
-.val { font: 12px var(--mono); color: var(--muted); min-width: 44px; font-variant-numeric: tabular-nums; }
-button:focus-visible, input:focus-visible, .block:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.spacer { flex: 1; }
-.btn { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 8px; padding: 6px 12px; font: 500 13px var(--ui); cursor: pointer; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-/* mock browser */
-.window { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.chrome { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-.logo { display: flex; align-items: center; gap: 6px; font-weight: 700; }
-.logo i { width: 22px; height: 15px; border-radius: 4px; background: var(--accent); position: relative; }
-.logo i::after { content: ""; position: absolute; left: 8px; top: 4px; border-left: 7px solid #fff; border-block: 3.5px solid transparent; }
-.search { flex: 1; max-width: 420px; height: 30px; border: 1px solid var(--line); border-radius: 15px; margin: 0 auto; }
-.dot { width: 26px; height: 26px; border-radius: 50%; background: var(--skel); }
-
-.page { display: grid; grid-template-columns: minmax(0, 1fr) var(--side, 400px); gap: 20px; padding: 16px; align-items: start; }
-.page.left { grid-template-columns: var(--side, 400px) minmax(0, 1fr); }
-.page.left .col.side { order: -1; }
-.col { display: flex; flex-direction: column; gap: 12px; min-height: 160px; min-width: 0; padding: 6px; border: 1.5px dashed transparent; border-radius: 10px; transition: border-color .15s; }
-.dragging .col, .dragging .tray-list { border-color: var(--line); }
-.col-tag { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 -4px 6px; }
-
-/* blocks */
-.block { position: relative; border-radius: 10px; padding: 10px; background: var(--surface); outline: 1px solid transparent; cursor: grab; touch-action: none; }
-.block:hover { outline-color: var(--line); }
-.block .tag { position: absolute; top: 6px; right: 6px; font: 500 10px var(--mono); padding: 2px 6px; border-radius: 4px;
-  background: var(--accent-soft); color: var(--accent); opacity: 0; transition: opacity .15s; pointer-events: none; }
-.block:hover .tag, .block:focus-visible .tag { opacity: 1; }
-.block .x { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line);
-  background: var(--surface); color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; opacity: 0; }
-.block:hover .x, .block:focus-within .x { opacity: 1; }
-.sortable-ghost { opacity: .35; }
-.sortable-chosen { outline: 2px solid var(--accent) !important; cursor: grabbing; }
-
-.sk { display: block; height: 10px; border-radius: 5px; background: var(--skel); }
-.sk.d { background: var(--skel-2); }
-.row { display: flex; align-items: center; gap: 10px; }
-.av { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--skel-2); }
-.av.s { width: 24px; height: 24px; }
-.pill { flex: none; height: 32px; border-radius: 16px; background: var(--skel); display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; font-size: 12px; color: var(--muted); }
-.pill.round { width: 32px; padding: 0; }
-.pill.dark { background: var(--fg); color: var(--surface); font-weight: 600; }
-
-.player { aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; background: #0d0d0d; position: relative; overflow: hidden; }
-.player::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 30% 40%, #3b3631, #0d0d0d 70%); }
-.player .prog { position: absolute; left: 12px; right: 12px; bottom: 34px; height: 3px; background: #ffffff40; }
-.player .prog::before { content: ""; position: absolute; inset: 0 70% 0 0; background: var(--accent); }
-.player .ctl { position: absolute; left: 12px; bottom: 10px; font: 11px var(--mono); color: #ffffffb0; }
-.player .play { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 56px; height: 40px; border-radius: 10px; background: #ffffff20; }
-.player .play::after { content: ""; position: absolute; left: 23px; top: 12px; border-left: 14px solid #fff; border-block: 8px solid transparent; }
-
-.title { font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; margin: 0; }
-.meta { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
-.desc p { margin: 6px 0 0; font-size: 13px; }
-.desc b { font-size: 13px; }
-/* YouTube design language inside the mock page: Roboto, 12px description box, 8px chips, blue timestamps */
-.page { font-family: var(--yt); }
-.page .title { font-family: var(--yt); font-size: 20px; line-height: 28px; }
-.desc-btn { display: block; width: 100%; text-align: left; border: 0; border-radius: 12px; padding: 12px;
-  background: var(--yt-box); color: inherit; font: 400 14px/20px var(--yt); cursor: pointer; }
-.desc-btn:hover { background: var(--yt-chip-hover); }
-.desc-btn b { display: none; }
-.desc-btn p { margin: 0; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.desc-btn p::before { content: "812K views  3 days ago  "; font-weight: 500; white-space: pre; }
-.desc-btn .more { display: inline; font: 500 14px var(--yt); color: var(--fg); }
-.tabs { display: flex; gap: 12px; margin-bottom: 16px; }
-.tabs button { border: 0; border-radius: 8px; height: 32px; padding: 0 12px; background: var(--yt-chip); color: var(--fg);
-  font: 500 14px/32px var(--yt); cursor: pointer; }
-.tabs button:hover { background: var(--yt-chip-hover); }
-.tabs button[aria-selected="true"] { background: var(--yt-on-bg); color: var(--yt-on-fg); }
-.pg { font: 400 14px/20px var(--yt); }
-.pg p { margin: 0 0 12px; }
-.pg .meta { color: var(--fg); font-weight: 500; font-size: 14px; }
-.pg .ts { color: var(--yt-link); font-weight: 400; }
-.pg .chap { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; margin: 4px 0 12px; }
-.pg-desc { border-radius: 12px; background: var(--yt-box); padding: 12px; }
-.cm-head { font-family: var(--yt); }
-.cm-head b { font-size: 20px; font-weight: 700; }
-.cm-head span { font-size: 14px; font-weight: 500; color: var(--fg); }
-.cm small { color: var(--yt-sub); font-family: var(--yt); }
-.cm small b { color: var(--fg); font-weight: 500; }
-/* tweaks page: YouTube settings vocabulary (switches, red sliders, chips) */
-.tw { display: grid; gap: 4px; cursor: default; }
-.tw-sec { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.tw-sec:last-child { border-bottom: 0; }
-.tw-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
-.tw-row label { font: 500 14px var(--yt); }
-.tw-val { font: 500 14px var(--yt); color: var(--yt-sub); font-variant-numeric: tabular-nums; }
-.tw input[type=range] { width: 100%; accent-color: #ff0033; }
-.tw-hint { margin: 0 !important; font-size: 12px; color: var(--yt-sub); }
-.tw kbd { font: 500 11px var(--mono); padding: 1px 5px; border-radius: 4px; background: var(--yt-chip); }
-.tw-chips, .tw-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.tw-chips button, .tw-list span { border: 0; border-radius: 8px; height: 32px; padding: 0 12px; background: var(--yt-chip); color: var(--fg);
-  font: 500 14px/32px var(--yt); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.tw-chips button[aria-pressed="true"] { background: var(--yt-on-bg); color: var(--yt-on-fg); }
-.tw-list span { cursor: default; }
-.tw-list span button { border: 0; background: none; color: var(--yt-sub); font-size: 14px; cursor: pointer; padding: 0 0 0 2px; }
-.tw-list:empty::before { content: "No channels yet"; font-size: 13px; color: var(--yt-sub); }
-.tw-add { display: flex; gap: 8px; }
-.tw-add input { flex: 1; min-width: 0; height: 36px; border: 1px solid var(--line); border-radius: 18px; padding: 0 14px; background: var(--surface); color: var(--fg); font: 14px var(--yt); }
-.tw-add button { border: 0; border-radius: 18px; height: 36px; padding: 0 16px; background: var(--yt-on-bg); color: var(--yt-on-fg); font: 500 14px var(--yt); cursor: pointer; }
-.sw { flex: none; position: relative; width: 36px; height: 14px; border: 0; border-radius: 7px; background: var(--skel-2); cursor: pointer; padding: 0; }
-.sw::after { content: ""; position: absolute; top: -3px; left: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px #0005; transition: left .15s; }
-.sw[aria-checked="true"] { background: #ff003366; }
-.sw[aria-checked="true"]::after { left: 18px; background: #ff0033; }
-.tw-dim { opacity: .45; pointer-events: none; }
-.flash-panel { outline: 2px solid var(--accent) !important; }
-.ch b { display: block; font-size: 14px; }
-.ch small { color: var(--muted); font-size: 12px; }
-.acts { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.merch .items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
-.merch .items div { aspect-ratio: 1; border-radius: 8px; background: var(--skel); }
-.merch .items span { font: 12px var(--mono); }
-
-.cm-head { display: flex; gap: 16px; align-items: center; font-size: 14px; }
-.cm-head b { flex: 1; }
-.cm-head span { font-size: 12px; color: var(--muted); }
-.cm { display: flex; gap: 10px; margin-top: 12px; }
-.cm > div { flex: 1; min-width: 0; display: grid; gap: 5px; }
-.cm small { font-size: 12px; color: var(--muted); }
-
-.recs .grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 16px 12px; }
-.card .th { aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; position: relative; }
-.card .th em { position: absolute; right: 6px; bottom: 6px; font: 500 10px var(--mono); font-style: normal; background: #000c; color: #fff; padding: 1px 4px; border-radius: 3px; }
-.card .info { display: flex; gap: 8px; margin-top: 8px; }
-.card .info > div { flex: 1; min-width: 0; display: grid; gap: 3px; }
-.card b { font-size: 13px; line-height: 1.3; }
-.card small { font-size: 11px; color: var(--muted); }
-.recs.list .grid { grid-template-columns: 1fr; gap: 10px; }
-.recs.list .card { display: grid; grid-template-columns: 42% 1fr; gap: 10px; }
-.recs.list .card .info { margin-top: 0; }
-.recs.list .card .av { display: none; }
-
-.chat .box { height: 120px; border-radius: 8px; background: var(--sunk); display: grid; gap: 6px; padding: 10px; align-content: start; }
-
-/* tray */
-.tray { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
-.tray h2 { margin: 0; font-size: 13px; font-weight: 600; }
-.tray p { margin: 0; color: var(--muted); font-size: 12px; }
-.tray-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 6px; border: 1.5px dashed var(--line); border-radius: 10px; }
-.tray-list .block { padding: 0; background: none; }
-.tray-list .block > :not(.chip) { display: none; }
-.chip { display: none; }
-.tray-list .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: var(--sunk); font-weight: 500; font-size: 13px; }
-.tray-list .chip::before { content: "+"; color: var(--accent); font-weight: 700; }
-
-/* page switch + mock home page */
-body:not(.view-watch) .watch-only, body:not(.view-home) .home-only, body:not(.view-stack) .stack-only, body:not(.view-pages) .pages-only { display: none !important; }
-/* narrow-window mock */
-.stack-page { padding: 16px; max-width: 560px; margin: 0 auto; font-family: var(--yt); }
-.stack-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; color: var(--muted); font: 12px var(--ui); margin: 0 6px 8px; }
-.stack-head .row { gap: 8px; color: var(--fg); }
-/* other pages */
-.pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-.pg-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
-.pg-card h3 { margin: 0 0 4px; font-size: 15px; }
-.pg-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; }
-.pg-row input[type=range] { flex: 1; }
-.pg-hint { margin: 4px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-/* profile options */
-.prof-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
-.prof-panel summary { cursor: pointer; font-weight: 500; }
-.prof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 24px; margin-top: 12px; }
-.prof-grid .chk { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
-.prof-grid .chk input { accent-color: var(--accent); margin-top: 3px; }
-.prof-grid .stack-l { display: block; margin: 10px 0 4px; }
-.prof-grid textarea { min-height: 64px; }
-.prof-grid .row { gap: 8px; flex-wrap: wrap; }
-.hint { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
-#undo:disabled, #redo:disabled { color: var(--muted); cursor: default; }
-.home-page { padding: 16px; font-family: var(--yt); }
-.home-page .col { min-height: 120px; }
-.block > .x, .block > .tag { z-index: 2; } /* keep hide buttons above positioned mocks (carousel, player) */
-.shelf-h { margin: 0 0 10px; font: 700 18px/24px var(--yt); }
-.hero { position: relative; height: 170px; border-radius: 10px; overflow: hidden; padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px;
-  background: linear-gradient(90deg, #000c 0%, #0006 45%, #0000 80%), linear-gradient(135deg, #5b6b7a, #2e3a46); color: #fff; }
-.hero small { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; opacity: .8; }
-.hero b { font-size: 20px; line-height: 1.2; max-width: 60%; }
-.hero .pill.dark { align-self: flex-start; background: #fff; color: #000; }
-.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.strip > div { aspect-ratio: 16 / 9; border-radius: 8px; position: relative; overflow: hidden; }
-.strip.prog > div::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--p, 40%); background: #ff0033; }
-.strip > div em { position: absolute; left: 6px; top: 6px; font: 600 10px var(--yt); font-style: normal; background: #ff0033; color: #fff; padding: 1px 5px; border-radius: 3px; }
-@media (max-width: 760px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-/* profiles */
-.prof-sel { height: 30px; max-width: 180px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 500 13px var(--ui); padding: 0 8px; cursor: pointer; }
-.seg button:disabled { color: var(--muted); cursor: not-allowed; }
-.prof-form { display: flex; gap: 6px; align-items: center; }
-.prof-form input { height: 30px; width: 160px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 13px var(--ui); padding: 0 10px; }
-.prof-form input[aria-invalid="true"] { border-color: var(--accent); }
-#profGroup.editing > :is(#profSel, #profBtns) { display: none; }
-
-/* export */
-.out { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
-.out .row { justify-content: space-between; flex-wrap: wrap; }
-.out h2 { margin: 0; font-size: 13px; font-weight: 600; }
-textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--sunk); color: var(--fg); font: 12px/1.5 var(--mono); padding: 10px; }
-.toast { font-size: 12px; color: var(--accent); }
-
-@media (max-width: 760px) {
-  .page, .page.left { grid-template-columns: minmax(0, 1fr); }
-  .page.left .col.side { order: 0; }
-  .recs .grid { grid-template-columns: repeat(min(var(--cols, 3), 2), minmax(0, 1fr)); }
-  .search { display: none; }
-}
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-
-.block[data-id="player"] .x { display: none; }
-.settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 24px; }
-.settings h2 { margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
-.settings label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
-.settings label.stack { flex-direction: column; align-items: stretch; gap: 6px; }
-.settings input[type=checkbox] { accent-color: var(--accent); }
-.settings input[type=number] { width: 64px; margin-left: auto; background: var(--sunk); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
-.settings textarea { min-height: 70px; }
-</style>
+<link rel="stylesheet" href="studio/studio.css">
 </head>
-<body>
-<div class="wrap">
-  <header class="top">
-    <h1>Elite<span>YT</span> Layout Studio</h1>
-    <p class="lede">Drag blocks to arrange the watch page (wide and narrow), the home page, and choose what other pages show. Drop a block in the tray to hide it. Changes save automatically and apply to open YouTube tabs.</p>
-  </header>
+<body class="view-watch">
+<a class="skip" href="#canvas">Skip to the page preview</a>
 
-  <div class="bar" role="toolbar" aria-label="Layout controls">
-    <div class="group" id="profGroup"><label class="lab" for="profSel">Profile</label>
-      <select id="profSel" class="prof-sel"></select>
+<header class="appbar">
+  <div class="brand" aria-label="EliteYT Layout Studio">
+    <span class="mark" aria-hidden="true"></span>
+    <span class="brand-name">Elite<b>YT</b></span>
+    <span class="brand-sub">Layout Studio</span>
+  </div>
+
+  <nav class="views" id="pageSel" aria-label="Page to edit">
+    <button type="button" data-view="watch">Watch</button>
+    <button type="button" data-view="stack" title="Narrow windows and theater mode">Narrow</button>
+    <button type="button" data-view="home">Home</button>
+    <button type="button" data-view="topbar" title="YouTube's top bar">Top bar</button>
+    <button type="button" data-view="pages" title="Subscriptions, search and channel pages">Pages</button>
+  </nav>
+
+  <div class="appbar-end">
+    <div class="prof" id="profGroup">
+      <label class="lab" for="profSel">Profile</label>
+      <select id="profSel" class="select"></select>
       <div class="seg" id="profBtns">
-        <button type="button" id="profNew" title="Save the current layout as a new profile">New</button>
+        <button type="button" id="profNew" title="Save the current layouts as a new profile">New</button>
         <button type="button" id="profRen">Rename</button>
         <button type="button" id="profDel">Delete</button>
       </div>
@@ -284,189 +41,140 @@ textarea { width: 100%; min-height: 150px; resize: vertical; border: 1px solid v
         <button type="button" class="btn" id="profCancel">Cancel</button>
       </form>
     </div>
-    <div class="group"><span class="lab">Page</span>
-      <div class="seg" id="pageSel">
-        <button type="button" data-view="watch">Watch</button>
-        <button type="button" data-view="stack" title="Narrow windows and theater mode">Narrow</button>
-        <button type="button" data-view="home">Home</button>
-        <button type="button" data-view="pages" title="Subscriptions, search and channel pages">Pages</button>
+    <div class="seg">
+      <button type="button" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H4V2M4 7a9 9 0 1 1-1 7"/></svg><span>Undo</span></button>
+      <button type="button" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7h5V2M20 7a9 9 0 1 0 1 7"/></svg><span>Redo</span></button>
+    </div>
+    <div class="tally" id="tally" title="Changes save automatically"><i aria-hidden="true"></i><span id="toast" aria-live="polite">Ready</span></div>
+    <button type="button" class="icon-btn" id="theme" aria-label="Switch between light and dark" title="Light or dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="fill"/></svg></button>
+    <button type="button" class="icon-btn" id="resetPanels" aria-label="Put the panels back where they started" title="Reset panels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg></button>
+  </div>
+</header>
+
+<main class="workspace">
+  <div class="dock dock-side" id="dockLeft" data-dock="left" aria-label="Left panel dock"></div>
+
+  <div class="center">
+    <section class="canvas" id="canvas" tabindex="-1" aria-label="Page preview">
+      <div class="browser">
+        <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="url" id="url">youtube.com/watch</span></div>
+
+        <!-- Watch: two columns -->
+        <div class="view view-watch-only">
+          <div class="page" id="page">
+            <div class="col main" aria-label="Main column"><span class="col-tag">Main column</span><div class="list v-list" id="main" aria-label="Main column blocks"></div></div>
+            <div class="col side" aria-label="Sidebar"><span class="col-tag">Sidebar</span><div class="list v-list" id="side" aria-label="Sidebar blocks"></div></div>
+          </div>
+        </div>
+
+        <!-- Narrow: one column -->
+        <div class="view view-stack-only">
+          <div class="stack-page">
+            <p class="view-note">Used when the window is too narrow for two columns<span id="stackNote"></span>.</p>
+            <div class="list v-list" id="stackMain" aria-label="Narrow window: blocks top to bottom"></div>
+          </div>
+        </div>
+
+        <!-- Home -->
+        <div class="view view-home-only">
+          <div class="home-page"><div class="list v-list" id="homeMain" aria-label="Home page sections"></div></div>
+        </div>
+
+        <!-- Top bar -->
+        <div class="view view-topbar-only">
+          <div class="mast" aria-label="YouTube's top bar">
+            <div class="zone"><span class="zone-tag">Left</span><div class="list h-list" id="tbLeft" aria-label="Left of the top bar"></div></div>
+            <div class="zone grow"><span class="zone-tag">Center</span><div class="list h-list" id="tbCenter" aria-label="Center of the top bar"></div></div>
+            <div class="zone"><span class="zone-tag">Right</span><div class="list h-list" id="tbRight" aria-label="Right of the top bar"></div></div>
+          </div>
+          <div class="ghost-page" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+
+        <!-- Pages -->
+        <div class="view view-pages-only">
+          <div class="pages" id="pagesGrid"></div>
+        </div>
       </div>
-    </div>
-    <div class="group watch-only"><span class="lab">Preset</span>
-      <div class="seg" id="presets">
-        <button type="button" data-preset="experimental">Experimental</button>
-        <button type="button" data-preset="classic">Classic</button>
-        <button type="button" data-preset="focus">Focus</button>
-      </div>
-    </div>
-    <div class="group watch-only"><span class="lab">Sidebar</span>
-      <div class="seg" id="sidePos">
-        <button type="button" data-side="left">Left</button>
-        <button type="button" data-side="right">Right</button>
-      </div>
-    </div>
-    <div class="group watch-only"><label class="lab" for="sideW">Width</label>
-      <input id="sideW" type="range" min="300" max="560" step="10"><span class="val" id="sideWv"></span>
-    </div>
-    <div class="group watch-only"><label class="lab" for="cols">Video columns</label>
-      <input id="cols" type="range" min="1" max="5" step="1"><span class="val" id="colsv"></span>
-    </div>
-    <div class="group watch-only"><span class="lab">Cards</span>
-      <div class="seg" id="cardStyle">
-        <button type="button" data-card="grid">Grid</button>
-        <button type="button" data-card="list">List</button>
-      </div>
-    </div>
-    <div class="spacer"></div>
-    <div class="group"><div class="seg">
-      <button type="button" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶ Undo</button>
-      <button type="button" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷ Redo</button>
-    </div></div>
+    </section>
+
+    <div class="dock dock-bottom" id="dockBottom" data-dock="bottom" aria-label="Bottom panel dock"></div>
   </div>
 
-  <details class="prof-panel" id="profPanel">
-    <summary>Profile options for <b id="profName2"></b></summary>
-    <div class="prof-grid">
-      <div>
-        <label class="chk"><input type="checkbox" id="profSettings"> Also save playback, SponsorBlock, filter and clean-UI settings with this profile</label>
-        <p class="hint">Off: this profile only changes layouts and uses the shared settings. On: speed, volume, SponsorBlock categories, the ad blocker and AI filter, and the Clean UI switches are kept per profile.</p>
+  <div class="dock dock-side" id="dockRight" data-dock="right" aria-label="Right panel dock"></div>
+</main>
+
+<!-- Panels: placed into the docks by options.js (where you left them last time) -->
+<div id="panelStore" hidden>
+  <section class="panel" data-panel="layout" aria-labelledby="pt-layout">
+    <header class="panel-head"><button type="button" class="grip" aria-label="Move the Layout panel" title="Drag to move. Arrow keys move it too.">⠿</button>
+      <h2 id="pt-layout">Layout</h2><button type="button" class="fold" aria-expanded="true" aria-label="Fold the Layout panel">▾</button></header>
+    <div class="panel-body">
+      <div class="view-watch-only stack-y">
+        <div class="field"><span class="lab">Preset</span>
+          <div class="seg wide" id="presets"><button type="button" data-preset="experimental">Experimental</button><button type="button" data-preset="classic">Classic</button><button type="button" data-preset="focus">Focus</button></div></div>
+        <div class="field"><span class="lab">Sidebar</span>
+          <div class="seg wide" id="sidePos"><button type="button" data-side="left">Left</button><button type="button" data-side="right">Right</button></div></div>
+        <div class="field"><label class="lab" for="sideW">Sidebar width</label><div class="range"><input id="sideW" type="range" min="300" max="560" step="10"><output id="sideWv"></output></div></div>
+        <div class="field"><label class="lab" for="cols">Video columns</label><div class="range"><input id="cols" type="range" min="1" max="5" step="1"><output id="colsv"></output></div></div>
+        <div class="field"><span class="lab">Cards</span>
+          <div class="seg wide" id="cardStyle"><button type="button" data-card="grid">Grid</button><button type="button" data-card="list">List</button></div></div>
+        <p class="hint">Drag blocks between the columns, and the buttons inside them (Like, Share, Subscribe…) within their row. The player can go in the sidebar too (experimental).</p>
       </div>
-      <div>
-        <label class="chk"><input type="checkbox" id="profMusic"> Switch to this profile automatically for music videos</label>
-        <label class="stack-l" for="profChannels">…and for these channels (one per line)</label>
-        <textarea id="profChannels" rows="3" placeholder="Channel name"></textarea>
-        <p class="hint">Automatic switching changes only the tab playing that video, and switches back when you leave it.</p>
+      <div class="view-stack-only stack-y">
+        <div class="switch-row"><span id="stackTheaterL">Also use this in theater mode</span><button type="button" class="sw" role="switch" id="stackTheater" aria-labelledby="stackTheaterL"></button></div>
+        <p class="hint">In theater mode the sidebar column is dropped, unless a playlist is showing there.</p>
       </div>
-      <div>
-        <div class="row"><button type="button" class="btn" id="profExport">Export all profiles</button>
-          <button type="button" class="btn" id="profImport">Import…</button></div>
-        <input type="file" id="profFile" accept="application/json,.json" hidden>
-        <p class="hint">A JSON file you can back up or share. Imported profiles are added next to yours; a name that's taken gets a number.</p>
+      <div class="view-home-only"><p class="hint">Drag the sections into the order you want. Recommended is YouTube's endless feed, so it always stays last. These sections need <b>Shelves</b> switched on in Settings.</p></div>
+      <div class="view-topbar-only"><p class="hint">Drag items between the left, center and right of the bar, or into Hidden. Home / Subscriptions / You shows when <b>EliteYT top bar</b> is on in Settings.</p></div>
+      <div class="view-pages-only"><p class="hint">Drag a section to <b>Top</b> to pin it above YouTube's results, to <b>Bottom</b> to move it after them, or into Hidden.</p></div>
+      <button type="button" class="btn ghost-btn" id="reset">Reset this page</button>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="hidden" aria-labelledby="pt-hidden">
+    <header class="panel-head"><button type="button" class="grip" aria-label="Move the Hidden panel" title="Drag to move. Arrow keys move it too.">⠿</button>
+      <h2 id="pt-hidden">Hidden</h2><button type="button" class="fold" aria-expanded="true" aria-label="Fold the Hidden panel">▾</button></header>
+    <div class="panel-body">
+      <p class="hint">Drop anything here to hide it. Click or drag it back to show it.</p>
+      <div class="view-watch-only stack-y">
+        <h3>Blocks</h3><div class="list tray" id="hidden" aria-label="Hidden blocks"></div>
+        <h3>Action buttons</h3><div class="list tray" id="hid-actions" aria-label="Hidden action buttons"></div>
+        <h3>Channel row</h3><div class="list tray" id="hid-channel" aria-label="Hidden channel row parts"></div>
+        <h3>Description</h3><div class="list tray" id="hid-description" aria-label="Hidden description parts"></div>
+        <h3>Recommendations</h3><div class="list tray" id="hid-related" aria-label="Hidden recommendation parts"></div>
+      </div>
+      <div class="view-stack-only"><div class="list tray" id="stackHidden" aria-label="Hidden in narrow windows"></div></div>
+      <div class="view-home-only"><div class="list tray" id="homeHidden" aria-label="Hidden home sections"></div></div>
+      <div class="view-topbar-only"><div class="list tray" id="tbHidden" aria-label="Hidden top bar items"></div></div>
+      <div class="view-pages-only stack-y">
+        <h3>Subscriptions</h3><div class="list tray" id="pg-subs-hidden" aria-label="Hidden on subscriptions"></div>
+        <h3>Search results</h3><div class="list tray" id="pg-search-hidden" aria-label="Hidden in search results"></div>
+        <h3>Channel pages</h3><div class="list tray" id="pg-channel-hidden" aria-label="Hidden on channel pages"></div>
       </div>
     </div>
-  </details>
+  </section>
 
-  <div class="window watch-only">
-    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
-    <div class="page" id="page">
-      <div class="col main" id="main" aria-label="Main column"></div>
-      <div class="col side" id="side" aria-label="Sidebar"></div>
+  <section class="panel" data-panel="profile" id="profPanel" aria-labelledby="pt-profile">
+    <header class="panel-head"><button type="button" class="grip" aria-label="Move the Profile panel" title="Drag to move. Arrow keys move it too.">⠿</button>
+      <h2 id="pt-profile">Profile: <span id="profName2"></span></h2><button type="button" class="fold" aria-expanded="true" aria-label="Fold the Profile panel">▾</button></header>
+    <div class="panel-body stack-y">
+      <label class="chk"><input type="checkbox" id="profSettings"><span>Also save playback, SponsorBlock, filter and clean-UI settings with this profile</span></label>
+      <p class="hint">Off: this profile only changes layouts. On: speed, volume, SponsorBlock, the ad blocker and AI filter, and the Clean UI switches are kept per profile.</p>
+      <label class="chk"><input type="checkbox" id="profMusic"><span>Switch to this profile automatically for music videos</span></label>
+      <label class="lab" for="profChannels">…and for these channels (one per line)</label>
+      <textarea id="profChannels" rows="3" placeholder="Channel name"></textarea>
+      <p class="hint">Automatic switching changes only the tab playing that video, and switches back when you leave it. Alt+Shift+P on YouTube cycles profiles; right-click the toolbar button to switch too.</p>
+      <div class="row-btns"><button type="button" class="btn" id="profExport">Export all profiles</button><button type="button" class="btn" id="profImport">Import…</button></div>
+      <input type="file" id="profFile" accept="application/json,.json" hidden>
     </div>
-  </div>
-
-  <section class="tray watch-only">
-    <h2>Hidden</h2>
-    <p>Blocks here won't show on the watch page. Drag one back to show it.</p>
-    <div class="tray-list" id="hidden" aria-label="Hidden blocks"></div>
   </section>
 
-  <div class="window home-only">
-    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
-    <div class="home-page">
-      <div class="col" id="homeMain" aria-label="Home page sections"></div>
-    </div>
-  </div>
-
-  <section class="tray home-only">
-    <h2>Hidden on home</h2>
-    <p>Sections here won't show on the home page. Drag or click one to bring it back. Recommended is YouTube's endless feed, so it always stays last.
-      These sections need <b>Shelves</b> (under Home in All settings) switched on.</p>
-    <div class="tray-list" id="homeHidden" aria-label="Hidden home sections"></div>
-  </section>
-
-  <div class="window stack-only">
-    <div class="chrome"><div class="logo"><i></i>Elite</div><div class="search"></div><div class="dot"></div></div>
-    <div class="stack-page">
-      <div class="stack-head"><span>Used when the window is too narrow for two columns</span>
-        <span class="row"><span id="stackTheaterL">Also in theater mode</span><button type="button" class="sw" role="switch" id="stackTheater" aria-labelledby="stackTheaterL"></button></span></div>
-      <div class="col" id="stackMain" aria-label="Narrow window: blocks top to bottom"></div>
-    </div>
-  </div>
-
-  <section class="tray stack-only">
-    <h2>Hidden in narrow windows</h2>
-    <p>Blocks here won't show when the watch page is a single column. Drag or click one to bring it back.</p>
-    <div class="tray-list" id="stackHidden" aria-label="Hidden in narrow windows"></div>
-  </section>
-
-  <section class="pages-only pages-wrap">
-    <div id="pagesGrid" class="pages-grid"></div>
-  </section>
-
-  <section class="out">
-    <div class="row"><h2>All settings</h2><span class="toast" id="toast" aria-live="polite"></span>
-      <button type="button" class="btn" id="reset">Reset layout</button></div>
-    <div id="form" class="settings"></div>
+  <section class="panel" data-panel="settings" aria-labelledby="pt-settings">
+    <header class="panel-head"><button type="button" class="grip" aria-label="Move the Settings panel" title="Drag to move. Arrow keys move it too.">⠿</button>
+      <h2 id="pt-settings">Settings</h2><button type="button" class="fold" aria-expanded="true" aria-label="Fold the Settings panel">▾</button></header>
+    <div class="panel-body"><div id="form" class="settings"></div></div>
   </section>
 </div>
-
-<template id="tpl">
-  <div class="block" data-id="player"><span class="chip">Player</span><div class="player"><span class="play"></span><span class="prog"></span><span class="ctl">0:42 / 13:31</span></div></div>
-  <div class="block" data-id="title"><span class="chip">Title</span><h3 class="title">Restoring a 1978 film camera with a broken shutter</h3><p class="meta">812,440 views · 3 days ago</p></div>
-  <div class="block desc" data-id="description"><span class="chip">Description</span><button type="button" class="desc-btn" aria-controls="cm-panel"><b>Description</b><p>A full teardown of a seized leaf shutter, from cleaning the blades to re-timing at 1/500 s.</p> <span class="more">...more</span></button></div>
-  <div class="block ch" data-id="channel"><span class="chip">Channel</span><div class="row"><span class="av"></span><div style="flex:1;min-width:0"><b>Bench &amp; Lens</b><small>1.2M subscribers</small></div><span class="pill round">🔔</span></div></div>
-  <div class="block acts-b" data-id="actions"><span class="chip">Actions</span><div class="acts"><span class="pill">👍 41K</span><span class="pill round">👎</span><span class="pill round">↗</span><span class="pill round">✂</span><span class="pill round">＋</span><span class="pill round">⋯</span></div></div>
-  <div class="block merch" data-id="merch"><span class="chip">Merch shelf</span><b>Shop the store</b><div class="items"><div></div><div></div><div></div><div></div></div></div>
-  <div class="block" data-id="comments" id="cm-panel"><span class="chip">Comments</span>
-    <div class="tabs" role="tablist" aria-label="Comments panel pages">
-      <button type="button" role="tab" data-page="comments" aria-selected="true">Comments</button>
-      <button type="button" role="tab" data-page="description" aria-selected="false">Description</button>
-      <button type="button" role="tab" data-page="tweaks" aria-selected="false">Tweaks</button>
-    </div>
-    <div class="pg tw" data-pg="tweaks" hidden>
-      <div class="tw-sec">
-        <div class="tw-row"><label for="twSpeed">Speed</label><span class="tw-val" id="twSpeedV"></span></div>
-        <input type="range" id="twSpeed" min="0.25" max="4" step="0.25">
-        <div class="tw-chips" id="twSpeedChips"></div>
-        <p class="tw-hint">Applies to normal channels. Keys: <kbd>[</kbd> <kbd>]</kbd> <kbd>\</kbd></p>
-      </div>
-      <div class="tw-sec">
-        <div class="tw-row"><label for="twMusic">Separate speed for music</label><button type="button" class="sw" id="twMusic" role="switch"></button></div>
-        <p class="tw-hint">Detects "- Topic" and VEVO channels and videos in the Music category.</p>
-        <div class="tw-row" id="twMusicRow"><label for="twMusicSpeed">Music speed</label><span class="tw-val" id="twMusicSpeedV"></span></div>
-        <input type="range" id="twMusicSpeed" min="0.5" max="2" step="0.05">
-      </div>
-      <div class="tw-sec">
-        <div class="tw-row"><label for="twAdd">Never change speed for</label></div>
-        <div class="tw-list" id="twList"></div>
-        <form class="tw-add" id="twForm"><input id="twAdd" placeholder="Channel name" autocomplete="off"><button type="submit">Add</button></form>
-      </div>
-      <div class="tw-sec">
-        <div class="tw-row"><label for="twVol">Volume boost</label><span class="tw-val" id="twVolV"></span></div>
-        <input type="range" id="twVol" min="100" max="300" step="10">
-      </div>
-      <div class="tw-sec">
-        <div class="tw-row"><label for="twQual">Quality follows speed</label><button type="button" class="sw" id="twQual" role="switch"></button></div>
-        <div class="tw-row"><label for="twAmb">Ambient mode off</label><button type="button" class="sw" id="twAmb" role="switch"></button></div>
-        <div class="tw-row"><label for="twBlur">Blur video when paused</label><button type="button" class="sw" id="twBlur" role="switch"></button></div>
-        <div class="tw-row"><label for="twTitle">Show title when paused</label><button type="button" class="sw" id="twTitle" role="switch"></button></div>
-      </div>
-    </div>
-    <div class="pg" data-pg="description" hidden><div class="pg-desc">
-      <p class="meta">812,440 views  Nov 1, 2026</p>
-      <p>A full teardown of a seized leaf shutter, from cleaning the blades to re-timing at 1/500 s.</p>
-      <p>Parts: naphtha, lens spanner, 0.8 mm screwdriver, blower.</p>
-      <p class="meta">Chapters</p>
-      <div class="chap"><span class="ts">0:00</span><span>Intro</span><span class="ts">1:12</span><span>Removing the front element</span><span class="ts">4:30</span><span>Freeing the blades</span><span class="ts">9:05</span><span>Timing test</span><span class="ts">12:40</span><span>First roll</span></div>
-      <p class="meta">Show less</p>
-    </div></div>
-    <div class="pg" data-pg="comments">
-    <div class="cm-head"><b>2,318 Comments</b><span>Sort by</span><span>Expand</span></div>
-    <div class="cm"><span class="av s"></span><div><span class="sk" style="width:40%"></span></div></div>
-    <div class="cm"><span class="av s"></span><div><small><b>@darkroom_dan</b> 2 days ago</small><span class="sk" style="width:95%"></span><span class="sk" style="width:80%"></span></div></div>
-    <div class="cm"><span class="av s"></span><div><small><b>@f8andbethere</b> 1 day ago</small><span class="sk" style="width:90%"></span><span class="sk" style="width:55%"></span></div></div>
-    </div>
-  </div>
-  <div class="block recs" data-id="recommendations"><span class="chip">Recommendations</span><div class="grid"></div></div>
-  <div class="block chat" data-id="chat"><span class="chip">Live chat</span><b>Live chat</b><div class="box"><span class="sk" style="width:70%"></span><span class="sk" style="width:50%"></span><span class="sk" style="width:80%"></span></div></div>
-</template>
-
-<template id="tplHome">
-  <div class="block" data-id="hero"><span class="chip">Carousel</span><div class="hero"><small>Continue watching</small><b>Restoring a 1978 film camera</b><span class="pill dark">▶ Resume</span><i></i></div></div>
-  <div class="block" data-id="continue"><span class="chip">Continue watching</span><h3 class="shelf-h">Continue watching</h3><div class="strip prog"></div></div>
-  <div class="block" data-id="subs"><span class="chip">From your subscriptions</span><h3 class="shelf-h">From your subscriptions</h3><div class="strip"></div></div>
-  <div class="block recs" data-id="recommended"><span class="chip">Recommended</span><h3 class="shelf-h">Recommended for you</h3><div class="grid"></div></div>
-</template>
 
 <script src="vendor/Sortable.min.js"></script>
 <script src="src/defaults.js"></script>

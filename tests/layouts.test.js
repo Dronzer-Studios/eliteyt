@@ -85,18 +85,18 @@ const CHANNEL = `<!doctype html><meta charset="utf-8"><body><ytd-app><ytd-browse
 
   // ---- #5 studio: Pages view
   await studio.click('#pageSel [data-view=pages]');
-  ok(await studio.isVisible('#pagesGrid') && (await studio.$$('#pagesGrid .pg-card')).length === 3, 'Pages view: Subscriptions, Search and Channel cards');
-  ok(await studio.textContent('#pagesGrid .pg-card:first-child .val') === 'Auto', 'columns default to Auto (YouTube decides)');
-  await studio.screenshot({ path: path.join(SHOTS, 'studio-pages.png'), fullPage: true });
+  ok(await studio.isVisible('#pagesGrid') && (await studio.$$('#pagesGrid .pgcard')).length === 3, 'Pages view: Subscriptions, Search and Channel cards');
+  ok(await studio.textContent('#pagesGrid .pgcard[data-page=subs] output') === 'Auto', 'columns default to Auto (YouTube decides)');
   for (const [pg, sec] of [['subs', 'shorts'], ['subs', 'watched'], ['subs', 'upcoming'], ['subs', 'live'], ['search', 'shorts'], ['search', 'shelves'],
     ['search', 'channels'], ['search', 'playlists'], ['channel', 'banner'], ['channel', 'trailer'], ['channel', 'shorts']]) {
-    await studio.click(`#pagesGrid button[data-page=${pg}][data-sec=${sec}]`);
+    const sel = `.pgcard[data-page=${pg}] .block[data-id=${sec}]`;
+    await studio.hover(sel); await studio.click(sel + ' .x');
   }
   await studio.$eval('#cols-subs', (r) => { r.value = 6; r.dispatchEvent(new Event('input', { bubbles: true })); });
   await studio.$eval('#cols-channel', (r) => { r.value = 3; r.dispatchEvent(new Event('input', { bubbles: true })); });
   await settle();
   s = await all();
-  ok(s.pageLayouts.subs.cols === 6 && s.pageLayouts.channel.cols === 3 && s.pageLayouts.subs.hide.length === 4 && s.pageLayouts.search.hide.length === 4 && s.pageLayouts.channel.hide.length === 3, 'Pages edits saved');
+  ok(s.pageLayouts.subs.cols === 6 && s.pageLayouts.channel.cols === 3 && s.pageLayouts.subs.hidden.length === 4 && s.pageLayouts.search.hidden.length === 4 && s.pageLayouts.channel.hidden.length === 3, 'Pages edits saved');
 
   const shown = (p, cls) => p.$$eval(cls.map((c) => '.' + c).join(','), (els) => els.filter((e) => getComputedStyle(e).display !== 'none').map((e) => e.className));
   const subs = watch(await ctx.newPage());
@@ -116,5 +116,12 @@ const CHANNEL = `<!doctype html><meta charset="utf-8"><body><ytd-app><ytd-browse
   await subs.waitForTimeout(500);
   ok((await shown(subs, ['normal', 'watched', 'upcoming', 'live', 'short', 'shortshelf'])).length === 6, 'Reset (Pages view): everything shows again');
   ok(await subs.$eval('#grid', (g) => getComputedStyle(g).getPropertyValue('--ytd-rich-grid-items-per-row').trim()) === '', 'Reset: column count left to YouTube');
+  // pin Live to the top and move Watched to the bottom of subscriptions
+  await studio.dragAndDrop('#pg-subs-inline [data-id=live]', '#pg-subs-top', { targetPosition: { x: 40, y: 20 } }); await settle();
+  await studio.dragAndDrop('#pg-subs-inline [data-id=watched]', '#pg-subs-bottom', { targetPosition: { x: 40, y: 20 } }); await settle();
+  await subs.waitForTimeout(500);
+  const vis = await subs.$$eval('#contents > *', (els) => els.map((e) => [e.className, +getComputedStyle(e).order]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
+  ok(vis[0] === 'live' && vis.at(-1) === 'watched', 'subscriptions: Live pinned first, watched videos last: ' + vis.join(','));
+  ok(await subs.$eval('#contents', (c) => getComputedStyle(c).display) === 'flex', 'the feed becomes a flex row so the order applies');
   await done(ctx);
 })();
