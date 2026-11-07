@@ -13,6 +13,10 @@
   };
   const TB = { left: ['menu', 'logo'], center: ['search', 'voice'], right: ['create', 'nav', 'notifications', 'avatar'] };
   const same = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
+  // some of YouTube's own elements shadow `style` with a property of their own (a Symbol on newer view models), so
+  // read the element's real inline style through the HTMLElement getter
+  const STYLE = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style').get;
+  const css = (el) => STYLE.call(el);
 
   // YouTube's button view models carry an iconName in their data; the accessible name is the fallback (English UI)
   const icon = (el) => {
@@ -40,10 +44,10 @@
     for (const [el, id] of items) {
       if (!el) continue;
       // something we don't know (a button YouTube added) is left as it is, after the known ones when reordering
-      if (!id) { el.style.order = flat ? '90' : ''; continue; }
+      if (!id) { css(el).order = flat ? '90' : ''; continue; }
       el.dataset[attr] = id;
       const i = order.indexOf(id);
-      el.style.order = flat ? String(i < 0 ? 90 : i + 1) : '';
+      css(el).order = flat ? String(i < 0 ? 90 : i + 1) : '';
       el.toggleAttribute('data-eyt-hidden', hidden.includes(id));
     }
   }
@@ -103,7 +107,7 @@
       if (!el) continue;
       el.dataset.eytTb = id;
       const zone = ['left', 'center', 'right'].find((z) => (L[z] || []).includes(id));
-      el.style.order = custom && zone ? String(base[zone] + L[zone].indexOf(id)) : '';
+      css(el).order = custom && zone ? String(base[zone] + L[zone].indexOf(id)) : '';
       el.toggleAttribute('data-eyt-hidden', (L.hidden || []).includes(id));
     }
     // the first item of the center and right zones that is actually on screen pushes away from what's before it.
