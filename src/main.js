@@ -68,7 +68,16 @@
     root.style.setProperty('--eyt-side', (L.width || 400) + 'px');
     root.style.setProperty('--eyt-cols', L.cols || 3);
     root.style.setProperty('--eyt-home-cols', s.homeCols || 4);
+    // subscriptions / search / channel pages: hidden sections and grid columns (0 = YouTube's choice)
+    const P = s.pageLayouts || {};
+    for (const [pg, secs] of Object.entries(PAGE_SECS)) {
+      for (const sec of secs) root.classList.toggle(`eyt-${pg}-no-${sec}`, !!P[pg]?.hide?.includes(sec));
+      if (pg === 'search') continue;
+      root.classList.toggle(`eyt-${pg}-cols`, P[pg]?.cols > 1);
+      root.style.setProperty(`--eyt-${pg}-cols`, P[pg]?.cols || 4);
+    }
   };
+  const PAGE_SECS = { subs: ['shorts', 'watched', 'upcoming', 'live'], search: ['shorts', 'shelves', 'channels', 'playlists'], channel: ['banner', 'trailer', 'shorts'] };
 
   // --- quality follows speed
   let lastQ = '';
@@ -160,8 +169,8 @@
   document.addEventListener('ratechange', (e) => {
     if (!isMain(e)) return;
     applyQuality();
-    // ignore the player's own reset right after a video loads
-    if (s.rememberSpeed && Date.now() - loadedAt > 2000 && channel() && !special()) {
+    // ignore the player's own reset right after a video loads, and ads (the ad blocker runs them at 16x)
+    if (s.rememberSpeed && Date.now() - loadedAt > 2000 && !player()?.classList.contains('ad-showing') && channel() && !special()) {
       const m = read('eliteyt:speeds') || {};
       m[channel()] = e.target.playbackRate;
       localStorage.setItem('eliteyt:speeds', JSON.stringify(m));
@@ -297,7 +306,15 @@
       if (name && !(s.exempt || []).some((n) => n.toLowerCase() === name.toLowerCase())) set({ exempt: [...(s.exempt || []), name] });
       renderTweaks();
     };
+    const plist = s.profileList || [];
+    const pick = (id) => document.dispatchEvent(new CustomEvent('eliteyt:profile', { detail: JSON.stringify({ id }) }));
     pages.tweaks.replaceChildren(
+      plist.length < 2 ? '' : h('div', { class: 'eyt-tw-sec' },
+        row('Layout profile', null),
+        h('div', { class: 'eyt-chips' }, plist.map((p) =>
+          h('button', { type: 'button', class: 'eyt-chip', 'data-profile': p.id, 'aria-pressed': String(p.id === s.activeProfile && !s.autoProfile), onclick: () => pick(p.id) }, p.name))),
+        h('p', { class: 'eyt-tw-hint' }, s.autoProfile ? `This video uses ${s.autoProfile} automatically. ` : '',
+          s.profileKeys === false ? '' : 'Keys: Alt+Shift+P')),
       h('div', { class: 'eyt-tw-sec' },
         row('Speed', spVal), spIn,
         h('div', { class: 'eyt-chips' }, [1, 1.25, 1.5, 2, 3].map((v) =>
@@ -442,18 +459,23 @@
     const f = flexy(); if (!f) return;
     if (observed !== f) {
       observed = f;
-      new MutationObserver(applyLayout).observe(f, { attributes: true, attributeFilter: ['is-two-columns_'] });
+      new MutationObserver(applyLayout).observe(f, { attributes: true, attributeFilter: ['is-two-columns_', 'theater'] });
     }
     const pri = f.querySelector('#primary-inner'), sec = f.querySelector('#secondary-inner');
     if (!pri || !sec) return;
-    const L = s.layout;
+    // two columns: the watch layout. One column (narrow window), or theater mode when the stacked layout asks for it:
+    // the stacked layout, everything in the main column top to bottom.
+    const two = f.hasAttribute('is-two-columns_'), S = s.stackLayout;
+    const stacked = !!(S && Array.isArray(S.order) && S.order.includes('player') && (!two || (S.theater && f.hasAttribute('theater'))));
+    const L = stacked ? { main: S.order, sidebar: [], hidden: S.hidden || [] } : s.layout;
+    f.classList.toggle('eyt-stacked', !!(s.expLayout && stacked));
     readTheme();
-    if (s.expLayout && L && f.hasAttribute('is-two-columns_')) {
+    if (s.expLayout && L && (two || stacked)) {
       if (!holder.isConnected) f.append(holder);
       const cols = { main: pri, sidebar: sec, hidden: holder };
       // actions + recommendations both under the player: actions share one row with the filter chips
       guardMetadata();
-      const inline = L.main?.includes('actions') && L.main.includes('recommendations');
+      const inline = !stacked && L.main?.includes('actions') && L.main.includes('recommendations');
       const inlineCh = inline && L.main.includes('channel'); // channel joins the same row
       // only touch nodes that are out of place: re-appending #related reloads the whole grid (visible flash)
       const last = new Map();
@@ -462,15 +484,30 @@
         if (e.parentNode !== target || (prev && !(prev.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING))) move(e, target);
         last.set(target, e);
       };
+      // The player itself is never moved (YouTube moves its contents for theater / fullscreen and re-parenting
+      // would reconnect ytd-player). Blocks listed above it are inserted right before it; the rest follow it.
+      const pl = part('player'), at = pl?.parentNode === pri ? (L.main || []).indexOf('player') : -1;
+      if (at >= 0) last.set(pri, pl);
+      const above = [];
       for (const col of ['main', 'sidebar', 'hidden']) {
-        for (const id of L[col] || []) {
-          if (id === 'player') continue; // YouTube moves the player itself (theater, fullscreen)
-          if (id === 'description' && tab === 'description') continue;
-          if ((id === 'actions' || (id === 'channel' && inlineCh)) && inline) continue;
-          const e = part(id); if (!e) continue;
-          if (id === 'comments') { if (e.parentNode !== pages.comments) place(e, pages.comments); put(panel, cols[col], (x, t) => t.append(x)); }
-          else put(e, (id === 'description' && s.descToPanel) || (id === 'title' && s.titleInPlayer) ? holder : cols[col]); // description lives in its tab, title in the player
-        }
+        (L[col] || []).forEach((id, i) => {
+          if (id === 'player') return;
+          if (id === 'description' && tab === 'description') return;
+          if ((id === 'actions' || (id === 'channel' && inlineCh)) && inline) return;
+          const e = part(id); if (!e) return;
+          let node = e, target = cols[col], move = place;
+          if (id === 'comments') { if (e.parentNode !== pages.comments) place(e, pages.comments); node = panel; move = (x, t) => t.append(x); }
+          // description lives in its tab; with "title on the player" the title replaces the sidebar copy only,
+          // a title placed in the main column stays on the page
+          else if ((id === 'description' && s.descToPanel) || (id === 'title' && s.titleInPlayer && col === 'sidebar')) target = holder;
+          if (col === 'main' && i < at && target === pri) above.push(node);
+          else put(node, target, move);
+        });
+      }
+      let ref = pl;
+      for (const e of above.reverse()) {
+        if (e.nextElementSibling !== ref) { if (e !== panel && !orig.has(e)) orig.set(e, [e.parentNode, e.nextSibling]); pri.insertBefore(e, ref); }
+        ref = e;
       }
       const a = part('actions'), r = part('recommendations');
       if (inline && a && r) {
@@ -515,8 +552,42 @@
     panel.scrollIntoView({ block: 'nearest' });
   }, true);
 
+  // --- profiles: tell the bridge what is playing (automatic profiles), Alt+Shift+P cycles, toast on change
+  let ctxSent = '';
+  const report = () => {
+    const d = location.pathname === '/watch' ? player()?.getVideoData?.() : null;
+    const c = d?.author ? { channel: d.author, music: isMusic() } : {};
+    const json = JSON.stringify(c);
+    if (json === ctxSent) return;
+    ctxSent = json;
+    document.dispatchEvent(new CustomEvent('eliteyt:context', { detail: json }));
+  };
+  document.addEventListener('yt-navigate-finish', () => [0, 1000, 3000].forEach((t) => setTimeout(report, t)));
+  document.addEventListener('loadeddata', (e) => { if (isMain(e)) report(); }, true);
+  const profName = (id) => (s.profileList || []).find((p) => p.id === id)?.name || '';
+  let shownProfile = [s.activeProfile, s.autoProfile].join('|'), keyAsked = 0;
+  const profileToast = () => {
+    document.documentElement.dataset.eytAutoProfile = s.autoProfile || ''; // which profile this tab runs (tests, styling)
+    const now = [s.activeProfile, s.autoProfile].join('|');
+    if (now === shownProfile) return;
+    const was = shownProfile; shownProfile = now;
+    if (!was || !(s.profileList || []).length) return;
+    // only where it matters: the tab you pressed the key in, or the tab whose video switched automatically
+    if (s.autoProfile) toast(`Profile: ${s.autoProfile} (auto)`);
+    else if (Date.now() - keyAsked < 3000 || was.split('|')[1]) toast(`Profile: ${profName(s.activeProfile)}`);
+  };
+  document.addEventListener('keydown', (e) => {
+    if (s.profileKeys === false || !e.altKey || !e.shiftKey || e.ctrlKey || e.metaKey || e.code !== 'KeyP') return;
+    const t = e.target;
+    if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if ((s.profileList || []).length < 2) { toast('Only one layout profile'); return; }
+    e.preventDefault(); e.stopPropagation();
+    keyAsked = Date.now();
+    document.dispatchEvent(new CustomEvent('eliteyt:profile', { detail: JSON.stringify({ step: 1 }) }));
+  }, true);
+
   const applyAll = () => { playerTop(); applyClasses(); applyLayout(); applyQuality(); applyStats(); applyVolume(); if (tab === 'tweaks') renderTweaks(); };
-  document.addEventListener('eliteyt:settings', (e) => { s = JSON.parse(e.detail); lastQ = ''; applyAll(); });
+  document.addEventListener('eliteyt:settings', (e) => { s = JSON.parse(e.detail); lastQ = ''; applyAll(); profileToast(); });
   // YouTube stamps the metadata parts late, so re-apply a few times after each navigation
   let retry = [];
   const relayout = () => { retry.forEach(clearTimeout); retry = [0, 500, 1500, 3000, 6000].map((t) => setTimeout(applyLayout, t)); };
