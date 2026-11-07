@@ -131,11 +131,19 @@
   // ---------------- watch page ----------------
   const allowedHere = new Set();
   // YouTube's synthetic-content disclosure lives in the description's "How this content was made" section
-  const disclosed = () => {
-    if (document.querySelector('ytd-watch-flexy how-this-was-made-section-view-model, ytd-watch-flexy [class*="HowThisWasMade"]')) return true;
-    let d = null;
-    try { d = JSON.stringify(window.ytInitialData?.engagementPanels || ''); } catch {}
-    return !!d && /howThisWasMadeSectionViewModel|Altered or synthetic content/i.test(d);
+  // Only the "Altered or synthetic content" note counts: the same section also carries non-AI notes
+  // (auto-dubbing, camera capture). ytInitialData is from the first page load and goes stale on SPA
+  // navigation, so it only counts when it belongs to the current video.
+  const SYNTH = /Altered or synthetic content/i;
+  const disclosed = (id) => {
+    for (const el of document.querySelectorAll('ytd-watch-metadata how-this-was-made-section-view-model, ytd-watch-metadata [class*="HowThisWasMade"]')) {
+      if (SYNTH.test(el.textContent)) return true;
+    }
+    const data = window.ytInitialData;
+    if (!id || data?.currentVideoEndpoint?.watchEndpoint?.videoId !== id) return false;
+    let d = '';
+    try { d = JSON.stringify(data.engagementPanels || ''); } catch {}
+    return SYNTH.test(d);
   };
   function cover(v) {
     const p = player(); if (!p) return;
@@ -164,7 +172,7 @@
     if (!d?.video_id || location.pathname !== '/watch' || allowedHere.has(d.video_id) || !active()) { cover(null); return; }
     const desc = p.getPlayerResponse?.()?.videoDetails?.shortDescription || '';
     // the description joins the title only for strong AI labels (a long description is too noisy for the rest)
-    const v = judge(d.title || '', d.author || '', AI_STRONG.test(desc) ? 'ai-generated' : '', disclosed());
+    const v = judge(d.title || '', d.author || '', AI_STRONG.test(desc) ? 'ai-generated' : '', disclosed(d.video_id));
     cover(v);
     if (v) p.querySelector('video')?.pause();
   }
