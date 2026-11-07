@@ -33,7 +33,7 @@ const card = (i, [t, c]) => `<ytd-rich-item-renderer id="c${i}"><div id="content
   <ytd-channel-name><div id="text">${c.replace(/&/g, '&amp;')}</div></ytd-channel-name><span>12K views · 2 days ago</span></ytd-rich-grid-media></div></ytd-rich-item-renderer>`;
 const HOME = `<!doctype html><html><head><meta charset="utf-8"></head><body style="font:14px Roboto,Arial"><ytd-app><ytd-browse page-subtype="home"><ytd-rich-grid-renderer><div id="contents" style="display:grid;grid-template-columns:repeat(4,320px);gap:16px">
 ${CORPUS.map((x, i) => card(i, x)).join('')}</div></ytd-rich-grid-renderer></ytd-browse></ytd-app></body></html>`;
-const WATCH = (disclosed) => `<!doctype html><html><head><meta charset="utf-8"><script>var ytInitialData = ${JSON.stringify({ engagementPanels: disclosed ? [{ engagementPanelSectionListRenderer: { content: { structuredDescriptionContentRenderer: { items: [{ howThisWasMadeSectionViewModel: { sectionTitle: { content: 'How this content was made' }, bodyHeader: { content: 'Altered or synthetic content' } } }] } } } }] : [] })};</script></head>
+const WATCH = (disclosed) => `<!doctype html><html><head><meta charset="utf-8"><script>var ytInitialData = ${JSON.stringify({ currentVideoEndpoint: { watchEndpoint: { videoId: disclosed ? 'synthvid001' : 'normalvid01' } }, engagementPanels: disclosed ? [{ engagementPanelSectionListRenderer: { content: { structuredDescriptionContentRenderer: { items: [{ howThisWasMadeSectionViewModel: { sectionTitle: { content: 'How this content was made' }, bodyHeader: { content: 'Altered or synthetic content' } } }] } } } }] : [] })};</script></head>
 <body><ytd-app><ytd-watch-flexy><div id="movie_player" style="position:relative;width:854px;height:480px;background:#000"><video class="html5-main-video"></video></div></ytd-watch-flexy></ytd-app>
 <script>const mp = document.getElementById('movie_player');
 mp.getVideoData = () => ({ video_id: '${disclosed ? 'synthvid001' : 'normalvid01'}', title: 'A dog surfs a giant wave', author: 'Ocean Moments' });
@@ -119,6 +119,16 @@ addEventListener('load', () => document.dispatchEvent(new CustomEvent('yt-naviga
   await set({ slopAllow: [] });
   await p.goto('https://www.youtube.com/watch?v=normal'); await p.waitForTimeout(2500);
   ok(!(await p.$('.eyt-slop-cover')), 'undisclosed, normal title: not covered');
+  // SPA navigation from a disclosed video: ytInitialData is stale and must not flag the next one
+  await p.goto('https://www.youtube.com/watch?v=synth'); await p.waitForSelector('.eyt-slop-cover', { timeout: 6000 });
+  await p.evaluate(() => { const mp = document.getElementById('movie_player'); mp.getVideoData = () => ({ video_id: 'nextvid0001', title: 'Our wedding day', author: 'Ocean Moments' }); document.dispatchEvent(new CustomEvent('yt-navigate-finish')); });
+  await p.waitForTimeout(2500);
+  ok(!(await p.$('.eyt-slop-cover')), 'next video after a disclosed one (stale ytInitialData): not covered');
+  // the "How this content was made" section without the synthetic note (e.g. auto-dubbed) is not a disclosure
+  await p.goto('https://www.youtube.com/watch?v=normal');
+  await p.evaluate(() => { const m = document.createElement('ytd-watch-metadata'); m.innerHTML = '<how-this-was-made-section-view-model>How this content was made · Auto-dubbed</how-this-was-made-section-view-model>'; document.querySelector('ytd-watch-flexy').append(m); document.dispatchEvent(new CustomEvent('yt-navigate-finish')); });
+  await p.waitForTimeout(2500);
+  ok(!(await p.$('.eyt-slop-cover')), 'non-synthetic "How this was made" note: not covered');
   await ctx.close();
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
   process.exit(fails ? 1 : 0);
