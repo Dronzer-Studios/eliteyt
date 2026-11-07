@@ -355,3 +355,9 @@ body.dragging .list { outline-color: color-mix(in oklch, var(--yt-sub) 45%, tran
 }
 .desc-box .pieces { display: grid; }
 .desc-box .piece { display: block; white-space: normal; }
+
+/* channel + actions on one row above the recommendations, as on the real page (options.js renderAll) */
+#main.inline-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+#main.inline-row > .block { grid-column: 1 / -1; }
+#main.inline-row > .block[data-id="channel"] { grid-column: 1; }
+#main.inline-row > .block[data-id="actions"] { grid-column: 3; }

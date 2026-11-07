@@ -105,8 +105,14 @@
       const zone = ['left', 'center', 'right'].find((z) => (L[z] || []).includes(id));
       el.style.order = custom && zone ? String(base[zone] + L[zone].indexOf(id)) : '';
       el.toggleAttribute('data-eyt-hidden', (L.hidden || []).includes(id));
-      // the first item of the center and right zones pushes away from what's before it
-      el.toggleAttribute('data-eyt-tb-gap', !!(custom && zone && zone !== 'left' && L[zone][0] === id));
+    }
+    // the first item of the center and right zones that is actually on screen pushes away from what's before it.
+    // Items can be missing or hidden by YouTube (no voice search in Firefox, no Create button); a gap on one of
+    // those lands on nothing and the search box slides to the right.
+    const shown = (el) => !!el && el.getClientRects().length > 0;
+    for (const z of ['center', 'right']) {
+      const first = custom ? (L[z] || []).find((id) => shown(items[id])) : null;
+      for (const id of L[z] || []) items[id]?.toggleAttribute('data-eyt-tb-gap', id === first);
     }
   }
 

@@ -58,6 +58,11 @@ const { ok, watch, done } = suite();
   ok(!(await shown(tb('create'))), 'Create hidden');
   ok(await x(tb('logo')) < await x(tb('search')) && await x(tb('voice')) < await x(tb('avatar')), 'center and right zones keep their places');
   ok(await p.$eval(tb('search'), (e) => e.hasAttribute('data-eyt-tb-gap')) && await p.$eval(tb('nav') + ',' + tb('avatar'), (e) => e.hasAttribute('data-eyt-tb-gap')), 'the first item of the center and right zones is pushed apart');
+  // a zone whose first item YouTube doesn't show (no Create button) still pushes apart, from its first visible item
+  await p.$eval(tb('create'), (e) => { e.style.display = 'none'; });
+  await set({ topbarLayout: { left: ['nav', 'logo'], center: ['search', 'voice'], right: ['create', 'notifications', 'avatar'], hidden: ['menu'] } });
+  ok(await p.$eval(tb('notifications'), (e) => e.hasAttribute('data-eyt-tb-gap')) && !(await p.$eval(tb('create'), (e) => e.hasAttribute('data-eyt-tb-gap'))), 'gap moves to the first visible item of a zone');
+  await p.$eval(tb('create'), (e) => { e.style.display = ''; });
   await set({ topbarLayout: { left: ['menu', 'logo'], center: ['search', 'voice'], right: ['create', 'nav', 'notifications', 'avatar'], hidden: [] } });
   ok(!(await p.evaluate(() => document.documentElement.classList.contains('eyt-tb'))) && await shown(tb('create')), 'default top bar: flattening off again');
 

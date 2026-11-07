@@ -417,7 +417,6 @@ html.eyt-tb ytd-masthead :is(#start, #center, #end, #end > #buttons) { display: 
 html.eyt-tb ytd-masthead [data-eyt-tb] { flex: none; }
 html.eyt-tb ytd-masthead [data-eyt-tb-gap] { margin-left: auto !important; }
 html.eyt-tb ytd-masthead [data-eyt-tb="search"] { flex: 0 1 640px; min-width: 0; margin-right: 8px; }
-html.eyt-tb ytd-masthead [data-eyt-tb="voice"] { margin-right: auto; }
 
 /* ===== player in the sidebar (experimental) ===== */
 ytd-watch-flexy.eyt-player-side #secondary-inner > #player { width: 100%; margin-bottom: 12px; }
