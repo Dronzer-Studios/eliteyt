@@ -1,0 +1,70 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+body { margin: 0; font: 14px Roboto, Arial; }
+ytd-masthead { display: block; height: 56px; }
+ytd-masthead #container { display: flex; align-items: center; height: 56px; padding: 0 16px; }
+ytd-masthead #start, ytd-masthead #end, ytd-masthead #buttons { display: flex; align-items: center; }
+ytd-masthead #center { display: flex; flex: 1; justify-content: center; }
+ytd-masthead [data-w] { display: inline-block; height: 32px; margin: 0 4px; background: #eee; }
+#columns { display: flex; } #primary { flex: 1; } #secondary { width: 400px; }
+#movie_player { aspect-ratio: 16/9; background: #000; position: relative; }
+ytd-menu-renderer, #top-level-buttons-computed, #flexible-item-buttons, #owner, ytd-video-owner-renderer { display: flex; align-items: center; gap: 4px; }
+</style></head>
+<body><ytd-app>
+<ytd-masthead><div id="container">
+  <div id="start"><button id="guide-button" data-w style="width:40px">≡</button><ytd-topbar-logo-renderer data-w style="width:90px"><a id="logo" href="/">YouTube</a></ytd-topbar-logo-renderer></div>
+  <div id="center"><yt-searchbox data-w style="width:300px"><form id="search-form"><input></form></yt-searchbox><button id="voice-search-button" data-w style="width:40px">mic</button></div>
+  <div id="end"><div id="buttons">
+    <ytd-button-renderer data-w style="width:80px"><button aria-label="Create">Create</button></ytd-button-renderer>
+    <ytd-notification-topbar-button-renderer data-w style="width:40px">bell</ytd-notification-topbar-button-renderer>
+    <ytd-topbar-menu-button-renderer data-w style="width:40px">me</ytd-topbar-menu-button-renderer>
+  </div></div>
+</div></ytd-masthead>
+<ytd-watch-flexy is-two-columns_>
+ <div id="columns">
+  <div id="primary"><div id="primary-inner">
+   <div id="player"><div id="player-container-outer"><ytd-player id="ytd-player"><div id="movie_player"><video class="html5-main-video" muted></video></div></ytd-player></div></div>
+   <div id="below"><ytd-watch-metadata>
+    <div id="title"><h1><yt-formatted-string>Fixture video title</yt-formatted-string></h1></div>
+    <div id="top-row">
+     <div id="owner">
+      <ytd-video-owner-renderer><a id="avatar" class="yt-simple-endpoint" href="/@x">(avatar)</a><div id="upload-info">Fixture Channel · 1M subscribers</div></ytd-video-owner-renderer>
+      <div id="sponsor-button"><button>Join</button></div>
+      <div id="subscribe-button"><button>Subscribe</button></div>
+     </div>
+     <div id="actions"><div id="actions-inner"><div id="menu"><ytd-menu-renderer>
+      <div id="top-level-buttons-computed">
+       <segmented-like-dislike-button-view-model><button aria-label="like">Like</button><button aria-label="dislike">Dislike</button></segmented-like-dislike-button-view-model>
+       <yt-button-view-model id="share-btn"><button aria-label="Teilen">Teilen</button></yt-button-view-model>
+      </div>
+      <div id="flexible-item-buttons">
+       <ytd-download-button-renderer><button aria-label="Download">Download</button></ytd-download-button-renderer>
+       <yt-button-view-model><button aria-label="Clip">Clip</button></yt-button-view-model>
+       <yt-button-view-model><button aria-label="Thanks">Thanks</button></yt-button-view-model>
+       <yt-button-view-model><button aria-label="Save to playlist">Save</button></yt-button-view-model>
+       <yt-button-view-model id="ask"><button aria-label="Ask">Ask</button></yt-button-view-model>
+      </div>
+      <button id="button-shape">⋯</button>
+     </ytd-menu-renderer></div></div></div>
+    </div>
+    <div id="bottom-row"><div id="description" class="ytd-watch-metadata"><div id="description-inner">
+     <div id="info-container">812K views · 3 days ago</div>
+     <ytd-text-inline-expander>A full teardown of a seized leaf shutter.</ytd-text-inline-expander>
+    </div></div></div>
+   </ytd-watch-metadata>
+   <ytd-comments id="comments"><div>comment 1</div></ytd-comments></div>
+  </div></div>
+  <div id="secondary"><div id="secondary-inner">
+   <div id="related"><yt-chip-cloud-renderer><span>All</span><span>Related</span></yt-chip-cloud-renderer><div id="items"><div>rec 1</div></div></div>
+  </div></div>
+ </div>
+</ytd-watch-flexy>
+</ytd-app>
+<script>
+// YouTube's button view models carry their icon in data; the label is localized ("Teilen" = Share in German)
+document.getElementById('share-btn').data = { buttonViewModel: { iconName: 'SHARE', title: 'Teilen' } };
+const mp = document.getElementById('movie_player');
+mp.getVideoData = () => ({ video_id: 'abcdefghijk', title: 'Fixture video title', author: 'Fixture Channel' });
+mp.getPlayerResponse = () => ({ videoDetails: {} });
+addEventListener('load', () => document.dispatchEvent(new CustomEvent('yt-navigate-finish')));
+</script></body></html>

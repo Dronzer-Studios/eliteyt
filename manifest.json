@@ -8,10 +8,11 @@
       "data_collection_permissions": { "required": ["browsingActivity"] } },
     "gecko_android": { "strict_min_version": "142.0" } },
   "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
-  "permissions": ["storage"],
+  "permissions": ["storage", "contextMenus"],
   "host_permissions": ["https://www.youtube.com/*", "https://sponsor.ajay.app/*", "https://dearrow-thumb.ajay.app/*", "https://returnyoutubedislikeapi.com/*"],
-  "action": { "default_popup": "popup.html", "default_title": "EliteYT", "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" } },
+  "action": { "default_title": "EliteYT Layout Studio", "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" } },
   "options_ui": { "page": "options.html", "open_in_tab": true },
+  "background": { "service_worker": "src/background.js", "scripts": ["src/defaults.js", "src/profiles.js", "src/background.js"] },
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
@@ -21,7 +22,7 @@
     },
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["src/adblock.js", "src/main.js", "src/sponsor.js", "src/home.js", "src/slop.js"],
+      "js": ["src/adblock.js", "src/main.js", "src/pieces.js", "src/sponsor.js", "src/home.js", "src/slop.js"],
       "run_at": "document_start",
       "world": "MAIN"
     }

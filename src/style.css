@@ -401,3 +401,39 @@ html.eyt-channel-no-banner ytd-browse[page-subtype="channels"] :is(#page-header-
 html.eyt-channel-no-trailer ytd-browse[page-subtype="channels"] ytd-channel-video-player-renderer,
 html.eyt-channel-no-shorts ytd-browse[page-subtype="channels"] :is(ytd-reel-shelf-renderer, ytd-item-section-renderer:has(ytd-reel-shelf-renderer),
   ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])) { display: none !important; }
+
+/* ===== pieces (layout studio): hidden parts, and rows flattened so their parts can be reordered ===== */
+[data-eyt-hidden] { display: none !important; }
+ytd-menu-renderer.eyt-flat { display: flex !important; align-items: center; flex-wrap: wrap; gap: 8px; }
+ytd-menu-renderer.eyt-flat > :is(#top-level-buttons-computed, #flexible-item-buttons) { display: contents !important; }
+#owner.eyt-flat { display: flex !important; align-items: center; gap: 12px; }
+#owner.eyt-flat > ytd-video-owner-renderer { display: contents !important; }
+#owner.eyt-flat > #subscribe-button { margin-left: 0; }
+#description-inner.eyt-flat-col { display: flex !important; flex-direction: column; }
+
+/* ===== top bar (layout studio → Top bar): the three zones flatten into one row ordered by the studio ===== */
+html.eyt-tb ytd-masthead #container { display: flex !important; align-items: center; }
+html.eyt-tb ytd-masthead :is(#start, #center, #end, #end > #buttons) { display: contents !important; }
+html.eyt-tb ytd-masthead [data-eyt-tb] { flex: none; }
+html.eyt-tb ytd-masthead [data-eyt-tb-gap] { margin-left: auto !important; }
+html.eyt-tb ytd-masthead [data-eyt-tb="search"] { flex: 0 1 640px; min-width: 0; margin-right: 8px; }
+html.eyt-tb ytd-masthead [data-eyt-tb="voice"] { margin-right: auto; }
+
+/* ===== player in the sidebar (experimental) ===== */
+ytd-watch-flexy.eyt-player-side #secondary-inner > #player { width: 100%; margin-bottom: 12px; }
+ytd-watch-flexy.eyt-player-side #secondary-inner > #player :is(#player-container-outer, #player-container-inner) { max-width: 100% !important; min-width: 0 !important; }
+
+/* ===== other pages: sections pinned to the top / moved to the bottom (layout studio → Pages) ===== */
+html.eyt-subs-ordered ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer > #contents { display: flex !important; flex-wrap: wrap; }
+html.eyt-subs-ordered ytd-browse[page-subtype="subscriptions"] :is(ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts], ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2), ytd-rich-item-renderer:has(a[href^="/shorts/"])) { order: var(--eyt-subs-shorts, 0); }
+html.eyt-subs-ordered ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(ytd-thumbnail-overlay-time-status-renderer[overlay-style="LIVE"], .badge-style-type-live-now-alternate, .yt-badge-shape--thumbnail-live) { order: var(--eyt-subs-live, 0); }
+html.eyt-subs-ordered ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(ytd-thumbnail-overlay-time-status-renderer[overlay-style="UPCOMING"], .yt-badge-shape--thumbnail-upcoming, [aria-label="Upcoming"]) { order: var(--eyt-subs-upcoming, 0); }
+html.eyt-subs-ordered ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(ytd-thumbnail-overlay-resume-playback-renderer, .ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment) { order: var(--eyt-subs-watched, 0); }
+html.eyt-search-ordered ytd-search :is(ytd-item-section-renderer > #contents, #contents.ytd-section-list-renderer) { display: flex !important; flex-direction: column; }
+html.eyt-search-ordered ytd-search :is(ytd-reel-shelf-renderer, grid-shelf-view-model, ytd-video-renderer:has(a[href^="/shorts/"])) { order: var(--eyt-search-shorts, 0); }
+html.eyt-search-ordered ytd-search :is(ytd-shelf-renderer, ytd-horizontal-card-list-renderer, ytd-vertical-list-renderer) { order: var(--eyt-search-shelves, 0); }
+html.eyt-search-ordered ytd-search ytd-channel-renderer { order: var(--eyt-search-channels, 0); }
+html.eyt-search-ordered ytd-search :is(ytd-playlist-renderer, ytd-radio-renderer, yt-lockup-view-model:has(a[href^="/playlist?list="], a[href*="&list=RD"])) { order: var(--eyt-search-playlists, 0); }
+html.eyt-channel-ordered ytd-browse[page-subtype="channels"] ytd-section-list-renderer > #contents { display: flex !important; flex-direction: column; }
+html.eyt-channel-ordered ytd-browse[page-subtype="channels"] ytd-item-section-renderer:has(ytd-channel-video-player-renderer) { order: var(--eyt-channel-trailer, 0); }
+html.eyt-channel-ordered ytd-browse[page-subtype="channels"] :is(ytd-item-section-renderer:has(ytd-reel-shelf-renderer), ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])) { order: var(--eyt-channel-shorts, 0); }

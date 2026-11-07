@@ -16,7 +16,7 @@ jobs:
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund
       - name: Syntax check
-        run: for f in src/*.js options.js popup.js tests/*.js; do node --check "$f"; done
+        run: for f in src/*.js options.js tests/*.js; do node --check "$f"; done
       - name: web-ext lint (Firefox / AMO rules)
         run: npx web-ext lint --warnings-as-errors=false
 
