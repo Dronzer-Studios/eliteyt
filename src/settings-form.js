@@ -9,6 +9,7 @@ const EYT_GROUPS = [
     ['#maxSpeed', 'Max speed', 2, 16, 0.25], ['#volume', 'Volume boost %', 100, 300, 10], ['exempt', 'Never change speed for'],
     ['moveAudio', 'Move Stable Volume / Voice boost to Tweaks']]],
   ['Ad blocker', [['adBlock', 'Block YouTube ads (video ads, feed and search ads, promos)']]],
+  ['Content ID', [['contentId', 'Warn about Content ID music when hovering a video (for streamers)']]],
   ['AI & low-effort filter', [['aiFilter', 'Flag AI-generated videos'], ['lowEffort', 'Flag low-effort videos (clickbait, hashtag spam, TTS stories)'],
     ['slopHide', 'Hide flagged videos instead of blurring them'], ['slopStrict', 'Strict: flag on fewer signals (more false positives)'],
     ['slopAllow', 'Never flag these channels'], ['slopBlock', 'Always block these channels']]],
