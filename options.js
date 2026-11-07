@@ -229,6 +229,13 @@ function renderAll() {
   for (const [z, sel] of [['left', '#tbLeft'], ['center', '#tbCenter'], ['right', '#tbRight'], ['hidden', '#tbHidden']]) place(lists[sel], M.topbar[z], tbEls);
   for (const pg of Object.keys(PAGE_DEF)) for (const z of [...pageZones(pg), 'hidden']) place(lists[`#pg-${pg}-${z}`], M.pages[pg][z], pageEls[pg]);
   const L = M.layout;
+  // like the real page: with actions and recommendations both in the main column, channel and actions share one row
+  // above the recommendations (src/main.js, `inline`)
+  const inline = L.main.includes('actions') && L.main.includes('recommendations');
+  lists['#main'].classList.toggle('inline-row', inline);
+  const recAt = L.main.indexOf('recommendations') * 2;
+  L.main.forEach((id, i) => { watchBlocks[id].style.order = !inline ? '' : String(id === 'channel' || id === 'actions' ? recAt - 1 : i * 2); });
+  for (const id of [...L.sidebar, ...L.hidden]) watchBlocks[id].style.order = '';
   $('#page').classList.toggle('left', L.side === 'left');
   $('#page').style.setProperty('--side', Math.round(L.width * 0.62) + 'px'); // the mock page is about 62% of a real one
   for (const g of $$('.vgrid', watchBlocks.recommendations)) { g.style.setProperty('--cols', L.cols); g.classList.toggle('list', L.card === 'list'); }
