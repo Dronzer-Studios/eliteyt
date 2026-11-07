@@ -22,7 +22,7 @@
     },
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["src/adblock.js", "src/main.js", "src/pieces.js", "src/sponsor.js", "src/home.js", "src/slop.js"],
+      "js": ["src/adblock.js", "src/main.js", "src/pieces.js", "src/sponsor.js", "src/home.js", "src/slop.js", "src/contentid.js"],
       "run_at": "document_start",
       "world": "MAIN"
     }

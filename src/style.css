@@ -436,3 +436,10 @@ html.eyt-search-ordered ytd-search :is(ytd-playlist-renderer, ytd-radio-renderer
 html.eyt-channel-ordered ytd-browse[page-subtype="channels"] ytd-section-list-renderer > #contents { display: flex !important; flex-direction: column; }
 html.eyt-channel-ordered ytd-browse[page-subtype="channels"] ytd-item-section-renderer:has(ytd-channel-video-player-renderer) { order: var(--eyt-channel-trailer, 0); }
 html.eyt-channel-ordered ytd-browse[page-subtype="channels"] :is(ytd-item-section-renderer:has(ytd-reel-shelf-renderer), ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])) { order: var(--eyt-channel-shorts, 0); }
+
+/* ===== Content ID warning (hover a video card) ===== */
+.eyt-cid-host { position: relative; }
+.eyt-cid { position: absolute; top: 8px; left: 8px; z-index: 4; max-width: calc(100% - 16px); padding: 3px 8px; border-radius: 6px;
+  font: 500 12px/1.4 Roboto, Arial, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: auto;
+  background: rgba(0, 0, 0, .72); color: #cfe9d4; }
+.eyt-cid.hit { background: #c62828; color: #fff; }
