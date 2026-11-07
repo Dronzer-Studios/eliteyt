@@ -1,14 +1,14 @@
-// Layout profiles. Shared by the studio, the popup and the content-script bridge (isolated world); needs EYT_DEFAULTS.
+// Layout profiles. Shared by the studio, the background script and the content-script bridge (isolated world); needs EYT_DEFAULTS.
 //
 // Storage (chrome.storage.sync caps one item at 8 KB, so each profile is its own item):
 //   profileIndex   [{ id, name }]            order of the profiles
-//   eytProfile:<id> { layout, homeLayout, stackLayout, pageLayouts, settings?, auto? }
+//   eytProfile:<id> { layout, homeLayout, stackLayout, pageLayouts, pieces, topbarLayout, settings?, auto? }
 //   activeProfile  id
 //   sharedSettings settings in force for profiles that don't carry their own (captured when you leave one)
 // The live keys (layout, homeLayout, ... and, for a profile with settings, those settings) always hold the active
 // profile's copy: that is what the content scripts read.
 const EYT_PROFILE_MAX = 15;
-const EYT_LAYOUT_KEYS = ['layout', 'homeLayout', 'stackLayout', 'pageLayouts'];
+const EYT_LAYOUT_KEYS = ['layout', 'homeLayout', 'stackLayout', 'pageLayouts', 'pieces', 'topbarLayout'];
 // what "this profile also sets playback, SponsorBlock, filters and clean-UI settings" covers
 const EYT_PROFILE_SETTINGS = ['defaultSpeed', 'musicSeparate', 'musicSpeed', 'maxSpeed', 'volume', 'exempt', 'rememberSpeed',
   'sponsorBlock', 'sbSponsor', 'sbSelfpromo', 'sbInteraction', 'sbIntro', 'sbOutro', 'sbPreview', 'sbFiller', 'sbMusic',

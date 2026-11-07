@@ -1,4 +1,4 @@
-// Layout profiles on the real extension pages (studio + popup, real chrome.storage) next to a YouTube fixture tab:
+// Layout profiles on the real extension pages (studio + toolbar menu, real chrome.storage) next to a YouTube fixture tab:
 // create / rename / delete, per-profile items, settings carried by a profile (#3), export / import (#1).
 const fs = require('fs'), path = require('path');
 const { SHOTS, fixture, launchExt, suite } = require('./lib');
@@ -54,16 +54,16 @@ const { ok, watch, done } = suite();
   await yt.waitForTimeout(800);
   ok((await ytMain()).includes('related'), 'YouTube tab followed the switch: ' + (await ytMain()).join(','));
 
-  // popup quick switcher
-  const pop = watch(await ctx.newPage());
-  await pop.setViewportSize({ width: 300, height: 600 });
-  await pop.goto(`chrome-extension://${id}/popup.html`);
-  await pop.waitForSelector('#profRow:not([hidden])');
-  ok(JSON.stringify(await pop.$$eval('#prof option', (o) => o.map((e) => e.textContent + (e.selected ? '*' : '')))) === '["Default*","Focus"]', 'popup lists profiles, active selected');
-  await pop.selectOption('#prof', { label: 'Focus' }); await settle(1000);
+  // right-click menu on the toolbar button: the profile switcher (it replaced the popup)
+  let [sw] = ctx.serviceWorkers(); if (!sw) sw = await ctx.waitForEvent('serviceworker');
+  const menuProfiles = () => sw.evaluate(async () => { await eytBackground.buildMenu(); return eytBackground.menu.filter((m) => m.parentId === 'profiles').map((m) => m.title + (m.checked ? '*' : '')); });
+  ok(JSON.stringify(await menuProfiles()) === '["Default*","Focus"]', 'toolbar menu lists profiles, active checked');
+  const focusId = s.profileIndex.find((e) => e.name === 'Focus').id;
+  await sw.evaluate((fid) => eytBackground.onMenu({ menuItemId: 'profile:' + fid }), focusId); await settle(1000);
   s = await all();
-  ok(JSON.stringify(s.layout.main) === JSON.stringify(focusMain) && !s.homeLayout.shown.includes('continue'), 'popup switch applies Focus (watch + home)');
-  ok(JSON.stringify(await opts()) === '["Default","Focus*"]' && JSON.stringify(await mainIds()) === JSON.stringify(focusMain), 'open studio follows the popup switch');
+  ok(JSON.stringify(s.layout.main) === JSON.stringify(focusMain) && !s.homeLayout.shown.includes('continue'), 'menu switch applies Focus (watch + home)');
+  ok(JSON.stringify(await opts()) === '["Default","Focus*"]' && JSON.stringify(await mainIds()) === JSON.stringify(focusMain), 'open studio follows the menu switch');
+  ok(JSON.stringify(await menuProfiles()) === '["Default","Focus*"]', 'menu check mark follows the active profile');
 
   // rename
   await studio.click('#profRen'); ok(await studio.inputValue('#profName') === 'Focus', 'Rename prefills the name');
@@ -72,7 +72,6 @@ const { ok, watch, done } = suite();
   ok(JSON.stringify(await opts()) === '["Default","Deep work*"]' && JSON.stringify(await mainIds()) === JSON.stringify(focusMain), 'rename persists across reload');
 
   // #3: this profile carries its own settings
-  await studio.click('#profPanel summary');
   await studio.check('#profSettings'); await settle();
   // change speed and SponsorBlock the way the popup / settings form does
   await studio.evaluate(() => new Promise((r) => chrome.storage.sync.set({ defaultSpeed: 2, sbIntro: true, aiFilter: false }, r)));
@@ -92,14 +91,14 @@ const { ok, watch, done } = suite();
 
   // #1: export
   await studio.selectOption('#profSel', { label: 'Deep work' }); await settle(1000);
-  await studio.fill('#profChannels', 'Bench & Lens'); await studio.check('#profMusic'); await studio.click('#profSettings'); await studio.click('#profSettings'); // blur textarea → change
+  await studio.fill('#profChannels', 'Bench & Lens'); await studio.check('#profMusic'); await studio.press('#profChannels', 'Tab'); // leaving the field saves it
   await settle();
   const [dl] = await Promise.all([studio.waitForEvent('download'), studio.click('#profExport')]);
   const file = path.join(SHOTS, dl.suggestedFilename());
   await dl.saveAs(file);
   const ex = JSON.parse(fs.readFileSync(file, 'utf8'));
   const dw = ex.profiles.find((p) => p.name === 'Deep work');
-  ok(ex.format === 'eliteyt-profiles' && ex.version === 1 && ex.profiles.length === 2 && /eliteyt-profiles-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'export: a dated JSON file with both profiles');
+  ok(ex.format === 'eliteyt-profiles' && ex.version === 2 && ex.profiles.length === 2 && /eliteyt-profiles-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'export: a dated JSON file with both profiles');
   ok(JSON.stringify(dw.layout.main) === JSON.stringify(focusMain) && dw.settings?.defaultSpeed === 2 && dw.auto?.music === true && dw.auto?.channels?.[0] === 'Bench & Lens' && !('id' in dw), 'export carries layouts, settings and auto rules (no internal ids)');
 
   // delete, then import it back
@@ -108,8 +107,7 @@ const { ok, watch, done } = suite();
   ok(JSON.stringify(await opts()) === '["Default*"]' && await studio.isDisabled('#profDel'), 'delete removes it; the last profile cannot be deleted');
   s = await all();
   ok(!Object.keys(s).some((k) => k.startsWith('eytProfile:') && !s.profileIndex.some((e) => 'eytProfile:' + e.id === k)), 'deleted profile item removed from storage');
-  await pop.reload(); await pop.waitForTimeout(400);
-  ok(await pop.isHidden('#profRow'), 'popup hides the switcher with a single profile');
+  ok(JSON.stringify(await menuProfiles()) === '[]', 'toolbar menu drops the profile list with a single profile');
 
   await studio.setInputFiles('#profFile', file); await settle();
   ok(JSON.stringify(await opts()) === '["Default*","Default (2)","Deep work"]', 'import restores "Deep work" (and the exported Default as "Default (2)"): ' + (await opts()).join(', '));

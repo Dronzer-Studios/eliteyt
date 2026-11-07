@@ -1,4 +1,4 @@
-// Shared by popup and options page: renders checkbox/number settings into `form`.
+// Renders the checkbox / number settings into `form` (the Layout Studio's Settings panel).
 const EYT_GROUPS = [
   ['Battery saver', [['battery', 'Enable battery saver'], ['onlyOnBattery', 'Only when unplugged'],
     ['autoQuality', 'Lower quality as speed rises'], ['cap30', 'Block 60fps streams'],
