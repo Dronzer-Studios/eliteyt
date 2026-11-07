@@ -69,9 +69,16 @@
     root.style.setProperty('--eyt-cols', L.cols || 3);
     root.style.setProperty('--eyt-home-cols', s.homeCols || 4);
     // subscriptions / search / channel pages: hidden sections and grid columns (0 = YouTube's choice)
+    // sections pinned to the top or moved to the bottom get a CSS order around YouTube's own (0)
     const P = s.pageLayouts || {};
     for (const [pg, secs] of Object.entries(PAGE_SECS)) {
-      for (const sec of secs) root.classList.toggle(`eyt-${pg}-no-${sec}`, !!P[pg]?.hide?.includes(sec));
+      const L = P[pg] || {}, hidden = L.hidden || L.hide || [], top = L.top || [], bottom = L.bottom || [];
+      for (const sec of secs) {
+        root.classList.toggle(`eyt-${pg}-no-${sec}`, hidden.includes(sec));
+        const t = top.indexOf(sec), b = bottom.indexOf(sec);
+        root.style.setProperty(`--eyt-${pg}-${sec}`, t >= 0 ? String(t - 50) : b >= 0 ? String(b + 50) : '0');
+      }
+      root.classList.toggle(`eyt-${pg}-ordered`, top.length + bottom.length > 0);
       if (pg === 'search') continue;
       root.classList.toggle(`eyt-${pg}-cols`, P[pg]?.cols > 1);
       root.style.setProperty(`--eyt-${pg}-cols`, P[pg]?.cols || 4);
@@ -486,12 +493,22 @@
       };
       // The player itself is never moved (YouTube moves its contents for theater / fullscreen and re-parenting
       // would reconnect ytd-player). Blocks listed above it are inserted right before it; the rest follow it.
-      const pl = part('player'), at = pl?.parentNode === pri ? (L.main || []).indexOf('player') : -1;
+      const pl = part('player'), plWas = pl?.parentNode;
+      // player in the sidebar (experimental): moved there like any other block. Back in the main column it returns to
+      // its own slot, and the blocks around it are placed relative to it as usual.
+      const plSide = !!pl && (L.sidebar || []).includes('player');
+      if (pl && !plSide && pl.parentNode !== pri) {
+        const o = orig.get(pl);
+        if (o?.[0]?.isConnected) o[0].insertBefore(pl, o[1]?.parentNode === o[0] ? o[1] : null); else pri.prepend(pl);
+        orig.delete(pl);
+      }
+      f.classList.toggle('eyt-player-side', plSide);
+      const at = pl?.parentNode === pri ? (L.main || []).indexOf('player') : -1;
       if (at >= 0) last.set(pri, pl);
       const above = [];
       for (const col of ['main', 'sidebar', 'hidden']) {
         (L[col] || []).forEach((id, i) => {
-          if (id === 'player') return;
+          if (id === 'player') { if (plSide && col === 'sidebar') put(pl, sec); return; }
           if (id === 'description' && tab === 'description') return;
           if ((id === 'actions' || (id === 'channel' && inlineCh)) && inline) return;
           const e = part(id); if (!e) return;
@@ -504,6 +521,8 @@
           else put(node, target, move);
         });
       }
+      // the player changed column: let YouTube size it for its new width
+      if (pl && pl.parentNode !== plWas) setTimeout(() => dispatchEvent(new Event('resize')), 50);
       let ref = pl;
       for (const e of above.reverse()) {
         if (e.nextElementSibling !== ref) { if (e !== panel && !orig.has(e)) orig.set(e, [e.parentNode, e.nextSibling]); pri.insertBefore(e, ref); }

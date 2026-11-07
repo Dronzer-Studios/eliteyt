@@ -54,35 +54,48 @@ Each suite in `tests/` loads the unpacked extension in Chromium and serves YouTu
 
 ## Usage
 
-Settings live in the toolbar popup; **Open full settings** has the drag-and-drop layout editor and presets. Switch its **Page** control to **Home** to reorder or hide the home sections (carousel, Continue watching, From your subscriptions, Recommended). Every feature can be switched off there.
+Click the EliteYT button in the toolbar (or in the browser's extensions menu) to open the **Layout Studio**. Right-click the button to switch layout profile.
 
-**Views:** **Watch** (two columns), **Narrow** (the stacked order used when the window is too narrow for two columns, and optionally in theater mode), **Home** (shelf order) and **Pages** (what subscriptions, search and channel pages show, and their column count). **Undo / Redo** (Ctrl+Z / Ctrl+Shift+Z) steps back through layout edits.
+![Layout Studio](docs/img/studio-watch.jpg)
 
-**Profiles** keep several sets of layouts side by side. **New** saves the current layouts under a name; edits go into the selected profile. Under **Profile options** a profile can also:
+**Everything moves.** Five views, each a mock page you drag things around on:
+- **Watch:** the blocks (player, title, channel, actions, description, comments, recommendations, merch, chat) between the main column and the sidebar, the player included, and the parts inside them: Like, Share, Save, Download, Clip, Thanks; avatar, name, Join, Subscribe; views and date, description text; filter chips.
+- **Narrow:** the one-column order for narrow windows (and theater mode, if you want).
+- **Home:** the carousel and shelves.
+- **Top bar:** YouTube's top bar items between left, center and right.
+- **Pages:** subscriptions, search and channel sections pinned to the top, left in YouTube's order, moved to the bottom, plus column counts.
+
+Drop anything in the **Hidden** panel to hide it; click it to bring it back. With the keyboard: Alt+arrows move the focused item, Alt+Shift+arrows move it to the next column or zone, Delete hides, Enter restores. **Undo / Redo** (Ctrl+Z / Ctrl+Shift+Z) steps back through every edit.
+
+The studio's own panels (Layout, Hidden, Profile, Settings) move too: drag a panel by its grip into the left, right or bottom dock, fold it, or use the arrow keys on the grip. Every setting is in the **Settings** panel.
+
+| Splice line while dragging | Panels rearranged | Dark |
+|---|---|---|
+| ![A piece being dragged: the red line marks where it lands](docs/img/studio-drag.jpg) | ![Hidden panel docked on the left](docs/img/studio-panels.jpg) | ![Dark theme](docs/img/studio-dark.jpg) |
+
+| Top bar | Pages | Narrow | Home |
+|---|---|---|---|
+| ![Top bar view](docs/img/studio-topbar.jpg) | ![Pages view](docs/img/studio-pages.jpg) | ![Narrow view](docs/img/studio-stack.jpg) | ![Home view](docs/img/studio-home.jpg) |
+
+**Profiles** keep several sets of layouts side by side. **New** saves the current layouts under a name; edits go into the selected profile. In the **Profile** panel a profile can also:
 - carry its own playback, SponsorBlock, filter and Clean UI settings (otherwise all profiles share them);
 - switch on automatically for music videos or chosen channels; this changes only the tab playing that video and switches back when you leave it;
 - be exported to a JSON file and imported again (or shared).
 
-Switch profiles from the studio, the toolbar popup, the **Tweaks** tab beside a video, or with **Alt+Shift+P** on YouTube.
-
-![Layout Studio profile options](docs/img/studio-profile-options.jpg)
-
-| Narrow windows / theater | Other pages |
-|---|---|
-| ![Layout Studio, narrow-window layout](docs/img/studio-narrow.jpg) | ![Layout Studio, subscriptions, search and channel pages](docs/img/studio-pages.jpg) |
-
-| Watch page: title above the player | Home page: all sections | Home page: carousel and Continue watching hidden |
-|---|---|---|
-| ![Layout Studio, watch page with the title above the player](docs/img/studio-watch-title-above.jpg) | ![Layout Studio, home page sections](docs/img/studio-home.jpg) | ![Layout Studio, home page with two sections hidden](docs/img/studio-home-hidden.jpg) |
+Switch profiles in the studio, from the toolbar button's right-click menu, in the **Tweaks** tab beside a video, or with **Alt+Shift+P** on YouTube.
 
 ## Architecture
 
 | File | World | Role |
 |---|---|---|
-| `src/bridge.js` | isolated | `chrome.storage` ↔ page (localStorage mirror + `eliteyt:settings` event) |
+| `src/background.js` | background | toolbar button opens the Layout Studio; right-click menu switches profile |
+| `src/bridge.js` | isolated | `chrome.storage` ↔ page (localStorage mirror + `eliteyt:settings` event), profiles per tab |
+| `src/profiles.js` | shared | layout profiles: storage, switching, automatic rules |
 | `src/main.js` | main | player API: speed, quality, volume, layout, comments panel, pause screen |
 | `src/sponsor.js` | main | SponsorBlock, DeArrow, Return YouTube Dislike, calm thumbnails |
 | `src/home.js` | main | home shelves, carousel, top bar |
+| `src/pieces.js` | main | parts inside watch-page blocks and top-bar items: order and hide |
+| `options.html`, `options.js`, `studio/` | page | the Layout Studio |
 | `src/adblock.js` | main | ad blocker: prunes ads from player/feed JSON, skips ads that still play |
 | `src/slop.js` | main | AI-generated / low-effort video filter (feed cards + watch page) |
 | `docs/` | — | GitHub Pages site and teaser video |

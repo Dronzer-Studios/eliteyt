@@ -21,7 +21,7 @@ const { ok, watch, done } = suite();
   // "Music": classic layout (comments under the video), switches on automatically for music
   await studio.click('#profNew'); await studio.fill('#profName', 'Music'); await studio.click('#profForm [type=submit]'); await settle(1000);
   await studio.click('#presets [data-preset=classic]'); await settle();
-  await studio.click('#profPanel summary'); await studio.check('#profMusic'); await settle();
+  await studio.check('#profMusic'); await settle();
   await studio.selectOption('#profSel', { label: 'Default' }); await settle(1000);
   ok(await activeName() === 'Default', 'set up: Music profile (classic layout, auto for music); Default active');
 
@@ -55,12 +55,12 @@ const { ok, watch, done } = suite();
 
   // channel rule: Music also for "Bench & Lens"
   await studio.selectOption('#profSel', { label: 'Music' }); await settle(1000);
-  await studio.fill('#profChannels', 'bench & lens'); await studio.click('#profPanel summary'); await settle();
+  await studio.fill('#profChannels', 'bench & lens'); await studio.press('#profChannels', 'Tab'); await settle();
   await studio.selectOption('#profSel', { label: 'Default' }); await settle(1000);
   await normal.reload(); await normal.waitForTimeout(1800);
   ok((await where(normal)).auto === 'Music', 'channel rule matches (case-insensitive)');
   await studio.selectOption('#profSel', { label: 'Music' }); await settle(1000);
-  await studio.click('#profPanel summary'); await studio.uncheck('#profMusic'); await studio.fill('#profChannels', ''); await studio.click('#profPanel summary'); await settle();
+  await studio.uncheck('#profMusic'); await studio.fill('#profChannels', ''); await studio.press('#profChannels', 'Tab'); await settle();
   await studio.selectOption('#profSel', { label: 'Default' }); await settle(1000);
   await normal.waitForTimeout(800);
   ok(!(await where(normal)).auto && !(await where(music)).auto, 'rules removed: both tabs back to Default live');
