@@ -1,0 +1,36 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - name: Syntax check
+        run: for f in src/*.js options.js popup.js tests/*.js; do node --check "$f"; done
+      - name: web-ext lint (Firefox / AMO rules)
+        run: npx web-ext lint --warnings-as-errors=false
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      # loads the unpacked extension in Chromium and runs it against YouTube-shaped fixture pages
+      - run: npm test
+        env: { SHOTS: test-shots }
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: test-screenshots, path: test-shots }
