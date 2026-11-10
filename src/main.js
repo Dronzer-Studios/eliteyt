@@ -528,6 +528,10 @@
         if (e.nextElementSibling !== ref) { if (e !== panel && !orig.has(e)) orig.set(e, [e.parentNode, e.nextSibling]); pri.insertBefore(e, ref); }
         ref = e;
       }
+      // YouTube's event-tickets shelf is merch too: it follows the merch shelf, and hides with it
+      const tk = f.querySelector('#ticket-shelf'), m = part('merch');
+      if (tk && m?.parentNode && tk.previousElementSibling !== m) { if (!orig.has(tk)) orig.set(tk, [tk.parentNode, tk.nextSibling]); m.after(tk); }
+      else if (tk && !m && (L.hidden || []).includes('merch') && tk.parentNode !== holder) place(tk, holder);
       const a = part('actions'), r = part('recommendations');
       if (inline && a && r) {
         if (r.firstElementChild !== a) { if (!orig.has(a)) orig.set(a, [a.parentNode, a.nextSibling]); r.prepend(a); }
