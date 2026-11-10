@@ -65,7 +65,7 @@
     if (c && list('slopAllow').includes(c)) return null;
     if (c && list('slopBlock').includes(c)) return { kind: 'blocked', why: ['channel on your block list'] };
     const r = score(title, channel, extra);
-    if (disclosed) { r.ai += 5; r.why.unshift('creator disclosed altered or synthetic content'); }
+    if (disclosed) { r.ai += 5; r.why.unshift('YouTube label: Made with AI'); }
     const T = THRESH();
     if (s.aiFilter !== false && r.ai >= T) return { kind: 'ai', why: r.why };
     if (s.lowEffort !== false && r.low >= T) return { kind: 'low', why: r.why };

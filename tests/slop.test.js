@@ -112,7 +112,7 @@ addEventListener('load', () => document.dispatchEvent(new CustomEvent('yt-naviga
   // watch page: YouTube's synthetic-content disclosure
   await p.goto('https://www.youtube.com/watch?v=synth');
   await p.waitForSelector('.eyt-slop-cover', { timeout: 6000 });
-  ok(/AI-generated/.test(await p.textContent('.eyt-slop-cover-title')) && /disclosed altered or synthetic/.test(await p.textContent('.eyt-slop-cover-why')), 'disclosed video: player covered with the reason');
+  ok(/AI-generated/.test(await p.textContent('.eyt-slop-cover-title')) && /YouTube label: Made with AI/.test(await p.textContent('.eyt-slop-cover-why')), 'disclosed video: player covered with the reason');
   ok(await p.evaluate(() => document.querySelector('video').paused), 'covered video is paused');
   await p.screenshot({ path: path.join(SHOTS, 'slop-watch.png'), clip: { x: 0, y: 0, width: 870, height: 500 } });
   await p.click('.eyt-slop-cover-btns button:nth-child(2)'); // Always allow channel
