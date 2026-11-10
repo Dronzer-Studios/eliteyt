@@ -4,42 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EliteYT</title>
-<meta name="description" content="EliteYT: a calmer, faster YouTube. Custom watch layout, Netflix-style home, pause screen, SponsorBlock, DeArrow and Return YouTube Dislike built in.">
+<meta name="description" content="EliteYT: YouTube rearranged around the video. Drag every part of the page where you want it, block ads, filter AI slop, see Content ID music before you click, with SponsorBlock, DeArrow and Return YouTube Dislike built in.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,500;8..144,800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap">
 <style>
-:root{--bg:#0f0f0f;--raised:#181818;--chip:#272727;--line:#3f3f3f;--fg:#f1f1f1;--fg2:#aaa;--red:#ff0033;
+:root{--bg:#0f0f0f;--raised:#181818;--chip:#272727;--line:#3f3f3f;--fg:#f1f1f1;--fg2:#aaa;--red:#ff0033;--green:#2e7d32;
   --display:"Roboto Flex",Roboto,system-ui,sans-serif;--mono:"Roboto Mono",ui-monospace,monospace;color-scheme:dark}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Roboto,system-ui,sans-serif}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Roboto,system-ui,sans-serif;overflow-x:hidden}
 a{color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
-header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--chip)}
-header .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
-.logo{display:inline-flex;align-items:center;gap:8px;font:800 20px var(--display);text-decoration:none;letter-spacing:-.4px}
+img{max-width:100%}
+.wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+/* header */
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--chip)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:56px}
+.logo{display:inline-flex;align-items:center;gap:8px;font:800 20px var(--display);text-decoration:none;letter-spacing:-.4px;flex:none}
 .logo svg{width:30px;height:21px}
-nav{display:flex;gap:6px;flex-wrap:wrap}
-nav a{font:500 14px Roboto;text-decoration:none;padding:6px 12px;border-radius:8px;background:var(--chip)}
-nav a:hover{background:#3f3f3f}
-.hero{padding:64px 0 32px;text-align:center}
-.hero h1{font:800 clamp(36px,6vw,68px)/1.05 var(--display);letter-spacing:-.02em;margin:0 0 14px}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav a{font:500 14px Roboto,system-ui,sans-serif;text-decoration:none;padding:6px 12px;border-radius:8px;white-space:nowrap;color:var(--fg2)}
+nav a:hover{background:var(--chip);color:var(--fg)}
+nav a.get{background:var(--fg);color:#0f0f0f}
+/* buttons */
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;border-radius:21px;font:500 15px Roboto,system-ui,sans-serif;text-decoration:none;border:0;cursor:pointer}
+.btn.p{background:var(--fg);color:#0f0f0f}.btn.p:hover{background:#d9d9d9}
+.btn.s{background:var(--chip)}.btn.s:hover{background:var(--line)}
+/* hero */
+.hero{padding:72px 0 40px;text-align:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;background:var(--raised);border:1px solid var(--chip);font:500 13px Roboto,system-ui,sans-serif;color:var(--fg2);text-decoration:none;margin-bottom:22px}
+.pill b{background:var(--red);color:#fff;border-radius:999px;padding:2px 10px;font:500 12px var(--mono);letter-spacing:.08em}
+.hero h1{font:800 clamp(38px,7vw,80px)/1.02 var(--display);letter-spacing:-.025em;margin:0 0 18px}
 .hero h1 em{font-style:normal;color:var(--red)}
-.hero p{color:var(--fg2);font-size:clamp(16px,2vw,20px);margin:0 auto 28px;max-width:680px}
-.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:20px;font:500 15px Roboto;text-decoration:none}
-.btn.p{background:var(--fg);color:#0f0f0f}.btn.s{background:var(--chip)}
-.video{margin:36px auto 0;border-radius:16px;overflow:hidden;outline:1px solid var(--line);background:#000;aspect-ratio:16/9}
-.video video{width:100%;height:100%;display:block}
-section{padding:64px 0;border-top:1px solid var(--chip)}
-.eb{font:500 12px var(--mono);letter-spacing:.24em;color:var(--red);text-transform:uppercase;margin:0 0 8px}
-h2{font:800 clamp(26px,3.6vw,40px)/1.1 var(--display);letter-spacing:-.01em;margin:0 0 12px}
-.lead{color:var(--fg2);max-width:760px;margin:0 0 28px;font-size:17px}
+.hero p.sub{color:var(--fg2);font-size:clamp(16px,2vw,20px);margin:0 auto 30px;max-width:720px}
+.hero .btns{justify-content:center}
+.by{font-size:14px;color:var(--fg2);margin:22px 0 0}.by a{color:var(--fg)}
+.show{margin:40px auto 0}
+.hero-tabs{justify-content:center}
+.cmp.big{border-radius:16px;box-shadow:0 30px 120px -40px rgba(255,0,51,.35)}
+.hint{color:var(--fg2);font-size:13px;margin:10px 0 0}
+/* feature index */
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,40vw),1fr));gap:10px;margin:0}
+.index a{display:block;text-decoration:none;background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:14px 16px;transition:border-color .15s}
+.index a:hover{border-color:var(--line)}
+.index b{display:block;font:500 15px Roboto,system-ui,sans-serif}
+.index span{font-size:13px;color:var(--fg2)}
+.index i{font-style:normal;font:500 10px var(--mono);letter-spacing:.14em;color:var(--red);margin-left:6px;vertical-align:2px}
+/* sections */
+section{padding:80px 0;border-top:1px solid var(--chip)}
+.eb{font:500 12px var(--mono);letter-spacing:.24em;color:var(--red);text-transform:uppercase;margin:0 0 10px}
+.eb i{font-style:normal;background:var(--red);color:#fff;border-radius:4px;padding:1px 6px;margin-left:8px;letter-spacing:.1em}
+h2{font:800 clamp(28px,4vw,46px)/1.08 var(--display);letter-spacing:-.015em;margin:0 0 14px}
+h3{font:500 18px Roboto,system-ui,sans-serif;margin:28px 0 8px}
+.lead{color:var(--fg2);max-width:760px;margin:0 0 30px;font-size:17px}
 .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:24px 0 0}
 .why div{background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:16px 18px}
-.why b{display:block;font:500 16px Roboto;margin-bottom:4px}
+.why b{display:block;font:500 16px Roboto,system-ui,sans-serif;margin-bottom:4px}
 .why span{color:var(--fg2);font-size:14px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+@media (max-width:860px){.split{grid-template-columns:1fr;gap:24px}}
+.list{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.list li{padding-left:22px;position:relative;color:var(--fg2)}
+.list li::before{content:"";position:absolute;left:4px;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--red)}
+.list b{color:var(--fg);font-weight:500}
 /* before / after slider */
-.cmp{position:relative;border-radius:12px;overflow:hidden;outline:1px solid var(--line);aspect-ratio:16/9;user-select:none;touch-action:pan-y}
+.cmp{position:relative;border-radius:12px;overflow:hidden;outline:1px solid var(--line);aspect-ratio:1594/832;user-select:none;touch-action:pan-y}
 .cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cmp .after{clip-path:inset(0 0 0 var(--x,50%))}
 .cmp .bar{position:absolute;top:0;bottom:0;left:var(--x,50%);width:3px;margin-left:-1.5px;background:var(--red);box-shadow:0 0 18px rgba(255,0,51,.6);pointer-events:none}
@@ -51,35 +79,140 @@ h2{font:800 clamp(26px,3.6vw,40px)/1.1 var(--display);letter-spacing:-.01em;marg
 figure{margin:0}
 figure img{width:100%;display:block;border-radius:12px;outline:1px solid var(--line)}
 figcaption{color:var(--fg2);font-size:14px;margin-top:8px}
-.rules{font:500 15px/2 var(--mono);background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:18px 22px;overflow-x:auto}
+/* studio tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.tabs button{height:34px;padding:0 14px;border-radius:8px;border:0;background:var(--chip);color:var(--fg);font:500 14px Roboto,system-ui,sans-serif;cursor:pointer}
+.tabs button:hover{background:var(--line)}
+.tabs button[aria-selected="true"]{background:var(--fg);color:#0f0f0f}
+.stage{position:relative;border-radius:14px;overflow:hidden;outline:1px solid var(--line);aspect-ratio:2880/1880;background:var(--raised)}
+.stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
+.stage img.on{opacity:1}
+.stage-cap{color:var(--fg2);font-size:14px;margin:10px 0 0;min-height:1.6em}
+/* code-ish rules */
+.rules{font:500 15px/2 var(--mono);background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:18px 22px;overflow-x:auto;white-space:nowrap}
 .rules em{font-style:normal;color:var(--red)}
-ol.steps{padding-left:20px;color:var(--fg2)}ol.steps li{margin:6px 0}
-code{font:500 14px var(--mono);background:var(--chip);padding:2px 6px;border-radius:4px;color:var(--fg)}
-.by{font-size:14px;color:var(--fg2);margin:20px 0 0}.by a,.credit a{color:var(--fg)}.credit{color:var(--fg);font-size:16px;margin:0 0 10px}
+/* ad blocker pipeline */
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:f}
+@media (max-width:760px){.flow{grid-template-columns:1fr}}
+.flow div{background:var(--raised);border:1px solid var(--chip);border-radius:12px;padding:18px;counter-increment:f}
+.flow div::before{content:"0" counter(f);display:block;font:500 12px var(--mono);letter-spacing:.2em;color:var(--red);margin-bottom:8px}
+.flow b{display:block;font:500 17px Roboto,system-ui,sans-serif;margin-bottom:6px}
+.flow span{color:var(--fg2);font-size:14px}
+/* mock feed cards (illustrations: invented titles and channels) */
+.mock{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:760px){.mock{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.mock{grid-template-columns:1fr}}
+.card{position:relative;min-width:0}
+.th{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+.th::after{content:attr(data-len);position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.8);color:#fff;font:500 12px Roboto,system-ui,sans-serif;padding:1px 5px;border-radius:4px}
+.g1{background:radial-gradient(circle at 30% 35%,#ffb36b 0 14%,transparent 15%),linear-gradient(160deg,#4a2b6b,#c4508a 60%,#ffcf8b)}
+.g2{background:radial-gradient(ellipse at 70% 80%,#1d5c4a 0 30%,transparent 31%),linear-gradient(180deg,#9ed5ff,#4f8fc9 55%,#24496e)}
+.g3{background:repeating-linear-gradient(90deg,#222 0 18px,#2c2c2c 18px 36px),#222}
+.g4{background:radial-gradient(circle at 50% 60%,#ffe08a 0 18%,transparent 19%),linear-gradient(135deg,#ff6a3d,#ff2e63)}
+.g5{background:linear-gradient(180deg,#0b1d3a,#1d3f72 50%,#c7a35a 51%,#8a6a2f)}
+.g6{background:radial-gradient(circle at 25% 70%,#8cf 0 10%,transparent 11%),radial-gradient(circle at 75% 30%,#fc8 0 12%,transparent 13%),#333}
+.meta{display:flex;gap:10px;margin-top:10px}
+.av{flex:none;width:34px;height:34px;border-radius:50%}
+.meta b{display:block;font:500 15px/1.35 Roboto,system-ui,sans-serif;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.meta span{display:block;color:var(--fg2);font-size:13px;margin-top:2px}
+/* the extension's own overlays, same look as src/style.css */
+.slop .th,.slop .meta{filter:blur(12px) grayscale(.6);opacity:.55}
+.tag{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;text-align:center;color:#fff;background:rgba(15,15,15,.72);border-radius:12px}
+.tag b{font:500 16px Roboto,system-ui,sans-serif}.tag small{font-size:13px;color:rgba(255,255,255,.82)}
+.tag button{border:0;border-radius:18px;height:32px;padding:0 16px;background:#fff;color:#0f0f0f;font:500 14px Roboto,system-ui,sans-serif;cursor:pointer}
+.cid{position:absolute;top:8px;left:8px;z-index:2;max-width:calc(100% - 16px);padding:3px 8px;border-radius:6px;font:500 12px Roboto,system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cid.hit{background:#c62828}
+.cover{margin-top:22px;border-radius:12px;aspect-ratio:21/9;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;outline:1px solid var(--line)}
+.cover b{font:500 clamp(18px,2.4vw,24px) Roboto}.cover small{color:#bbb;font-size:14px}
+.cover div{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.cover button{border:0;border-radius:18px;height:34px;padding:0 16px;font:500 14px Roboto,system-ui,sans-serif;background:rgba(255,255,255,.14);color:#fff;cursor:pointer}
+.cover button:first-child{background:#fff;color:#0f0f0f}
+.note{font-size:13px;color:var(--fg2);margin:12px 0 0}
+/* install */
+.install{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.box{background:var(--raised);border:1px solid var(--chip);border-radius:14px;padding:22px}
+.box h3{margin:0 0 6px}
+.box p{color:var(--fg2);margin:0 0 16px;font-size:15px}
+ol.steps{padding-left:20px;color:var(--fg2);margin:0;font-size:15px}ol.steps li{margin:6px 0}
+code{font:500 13px var(--mono);background:var(--chip);padding:2px 6px;border-radius:4px;color:var(--fg);word-break:break-word}
+kbd{font:500 13px var(--mono);background:var(--chip);border:1px solid var(--line);border-bottom-width:2px;padding:1px 6px;border-radius:5px}
 footer{padding:40px 0 60px;color:var(--fg2);font-size:14px;border-top:1px solid var(--chip)}
-@media (max-width:600px){nav{display:none}}
+footer .credit{color:var(--fg);font-size:16px;margin:0 0 10px}footer a{color:var(--fg)}
+@media (max-width:640px){nav a:not(.get){display:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.stage img{transition:none}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
   <a class="logo" href="#"><svg viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#ff0033"/><path d="M11 5.5v9l7.5-4.5z" fill="#fff"/></svg>EliteYT</a>
-  <nav><a href="#watch">Watch page</a><a href="#home">Home</a><a href="#community">SponsorBlock</a><a href="#battery">Battery</a><a href="#install">Install</a></nav>
+  <nav><a href="#studio">Studio</a><a href="#watch">Watch</a><a href="#home">Home</a><a href="#adblock">Ad blocker</a><a href="#filter">AI filter</a><a href="#contentid">Content ID</a><a class="get" href="#install">Install</a></nav>
 </div></header>
 
 <main class="wrap">
   <div class="hero">
     <h1>YouTube, <em>without the noise.</em></h1>
-    <p>EliteYT is a browser extension built to elevate your YouTube experience: a calmer home, comments beside the player, a pause screen that tells you what you're watching, and SponsorBlock, DeArrow and Return YouTube Dislike built in.</p>
-    <div class="btns"><a class="btn p" href="#install">Install</a><a class="btn s" href="#watch">See what changed</a><a class="btn s" href="https://github.com/Dronzer-Studios/eliteyt">GitHub</a></div>
-    <p class="by">Brought to you by <a href="https://github.com/Dronzer-Studios">Dronzer Studios</a>, creators of Thallium 81 &amp; hardware infrastructure.</p>
-    <div class="video"><video src="eliteyt-teaser.mp4" poster="img/after-watch.jpg" controls playsinline preload="metadata"></video></div>
+    <div class="btns"><a class="btn p" href="https://addons.mozilla.org/firefox/addon/eliteyt/">Get it for Firefox</a><a class="btn s" href="#install">Get it for Chrome</a><a class="btn s" href="https://github.com/Dronzer-Studios/eliteyt">GitHub</a></div>
+    <p class="by">By <a href="https://github.com/Dronzer-Studios">Dronzer Studios</a></p>
+    <div class="show">
+      <div class="tabs hero-tabs" role="tablist" aria-label="Compare pages"><button role="tab" aria-selected="true" data-pair="watch">Watch page</button><button role="tab" aria-selected="false" data-pair="home">Home</button></div>
+      <div class="cmp big" id="heroCmp"><img src="img/before-watch.jpg" alt="Stock YouTube"><img class="after" src="img/after-watch.jpg" alt="EliteYT"><div class="bar"></div><span class="t l">YOUTUBE</span><span class="t r">ELITEYT</span><input type="range" min="0" max="100" value="50" aria-label="Compare before and after"></div>
+      <p class="hint">Drag to compare</p>
+    </div>
   </div>
+
+  <div class="eb" id="features" style="margin-top:56px">Features</div>
+  <div class="index">
+    <a href="#studio"><b>Layout Studio</b><span>Drag every block, button and menu item.</span></a>
+    <a href="#profiles"><b>Profiles</b><span>Layouts per mood, auto-switch for music.</span></a>
+    <a href="#adblock"><b>Ad blocker</b><span>Its own, YouTube only, no lists to update.</span></a>
+    <a href="#filter"><b>AI &amp; low-effort filter</b><span>Blurs slop with the reason why.</span></a>
+    <a href="#contentid"><b>Content ID warning</b><span>Copyrighted music, before you click.</span></a>
+    <a href="#watch"><b>Watch page</b><span>Comments beside the player.</span></a>
+    <a href="#player"><b>Pause screen</b><span>Know what you're watching.</span></a>
+    <a href="#home"><b>Calm home</b><span>Rows, real frames, no sidebar.</span></a>
+    <a href="#community"><b>Built in</b><span>SponsorBlock, DeArrow, dislikes.</span></a>
+    <a href="#battery"><b>Speed &amp; battery</b><span>Per-channel speed, lighter streams.</span></a>
+  </div>
+
+  <section id="studio">
+    <div class="eb">Layout Studio</div>
+    <h2>Drag anything anywhere.</h2>
+    <p class="lead">Every block, button and menu item, on every page. Undo with <kbd>Ctrl</kbd>+<kbd>Z</kbd>.</p>
+    <div class="tabs" role="tablist" aria-label="Studio views">
+      <button role="tab" aria-selected="true" data-i="0">Watch</button><button role="tab" aria-selected="false" data-i="1">Narrow</button><button role="tab" aria-selected="false" data-i="2">Home</button><button role="tab" aria-selected="false" data-i="3">Top bar</button><button role="tab" aria-selected="false" data-i="4">Pages</button><button role="tab" aria-selected="false" data-i="5">Dark</button>
+    </div>
+    <div class="stage">
+      <img class="on" src="img/studio-watch.jpg" alt="Layout Studio, Watch view" data-cap="Watch: player, title, channel, actions, description, comments, recommendations, merch and chat between the main column and the sidebar, plus every button inside them.">
+      <img src="img/studio-stack.jpg" alt="Layout Studio, Narrow view" loading="lazy" data-cap="Narrow: the one-column order for small windows, and for theater mode if you want it.">
+      <img src="img/studio-home.jpg" alt="Layout Studio, Home view" loading="lazy" data-cap="Home: the carousel and the shelves, in any order.">
+      <img src="img/studio-topbar.jpg" alt="Layout Studio, Top bar view" loading="lazy" data-cap="Top bar: YouTube's top bar items between left, center and right.">
+      <img src="img/studio-pages.jpg" alt="Layout Studio, Pages view" loading="lazy" data-cap="Pages: subscriptions, search and channel sections pinned to the top, left alone or moved to the bottom, plus column counts.">
+      <img src="img/studio-dark.jpg" alt="Layout Studio in dark theme" loading="lazy" data-cap="Dark theme, and the studio's own panels docked where you like them.">
+    </div>
+    <p class="stage-cap" aria-live="polite"></p>
+  </section>
+
+  <section id="profiles">
+    <div class="split">
+      <div>
+        <div class="eb">Profiles</div>
+        <h2>A layout for every mood.</h2>
+        <p class="lead">Keep several layouts side by side: one for learning, one for music, one for late-night scrolling.</p>
+        <ul class="list">
+          <li><b>Switch on their own</b> for music videos or chosen channels, in that tab only, and switch back when you leave.</li>
+          <li><b>Carry their own settings</b>: playback, SponsorBlock, filters and Clean UI, or share them across profiles.</li>
+          <li><b>Export and import</b> a profile as a JSON file to back it up or share it.</li>
+          <li><b>Switch anywhere</b>: in the studio, the toolbar button's right-click menu, the Tweaks tab, or <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>.</li>
+        </ul>
+      </div>
+      <figure><img src="img/studio-panels.jpg" alt="Layout Studio with the Profile panel" loading="lazy"><figcaption>Profile and Hidden panels docked on the left.</figcaption></figure>
+    </div>
+  </section>
 
   <section id="watch">
     <div class="eb">Watch page</div>
     <h2>The video stays in view.</h2>
-    <p class="lead">Stock YouTube puts the title, channel and seven buttons under the video and fills the sidebar with thumbnails, so reading comments means scrolling the video away. Drag the slider to compare.</p>
-    <div class="cmp" style="--x:50%"><img src="img/before-watch.jpg" alt="Stock YouTube watch page"><img class="after" src="img/after-watch.jpg" alt="EliteYT watch page"><div class="bar"></div><span class="t l">YOUTUBE</span><span class="t r">ELITEYT</span><input type="range" min="0" max="100" value="50" aria-label="Compare before and after"></div>
+    <p class="lead">Stock YouTube puts the title, channel and seven buttons under the video and fills the sidebar with thumbnails, so reading comments means scrolling the video away.</p>
     <div class="why">
       <div><b>Comments beside the player</b><span>The sidebar scrolls on its own, so you can read while you watch.</span></div>
       <div><b>Comments · Description · Tweaks</b><span>One panel with YouTube-style chips. Clicking the description opens it there.</span></div>
@@ -91,28 +224,78 @@ footer{padding:40px 0 60px;color:var(--fg2);font-size:14px;border-top:1px solid 
   <section id="player">
     <div class="eb">On the player</div>
     <h2>Pause, and know what you're watching.</h2>
-    <p class="lead">The title moved out of the sidebar and onto the video: it shows with the controls on hover, and pausing blurs the frame and shows the title, channel, views, date and description, like a streaming app.</p>
+    <p class="lead">The title shows on the video with the controls. Pausing blurs the frame and shows the title, channel, views, date and description, like a streaming app.</p>
     <div class="shots">
       <figure><img src="img/pause.jpg" alt="Pause screen" loading="lazy"><figcaption>Pause screen, 2.5 s after pausing. Any mouse movement brings the controls back.</figcaption></figure>
       <figure><img src="img/hover.jpg" alt="Title on the player" loading="lazy"><figcaption>Title and channel along the top of the player, fading with the controls.</figcaption></figure>
-      <figure><img src="img/tweaks.jpg" alt="Tweaks panel" loading="lazy"><figcaption>Tweaks: speed per channel, a separate speed for music, a never-change list, volume boost, and Stable Volume moved out of the ⚙ menu.</figcaption></figure>
+      <figure><img src="img/tweaks.jpg" alt="Tweaks panel" loading="lazy"><figcaption>Tweaks: speed per channel, a separate speed for music, volume boost, Stable Volume out of the ⚙ menu.</figcaption></figure>
     </div>
   </section>
 
   <section id="home">
     <div class="eb">Home</div>
     <h2>A home that feels calm.</h2>
-    <p class="lead">Netflix-style rows in YouTube's own design language. The left sidebar is gone; Home, Subscriptions and You sit next to your avatar, and the filter chips only appear once you scroll.</p>
-    <div class="cmp" style="--x:50%"><img src="img/before-home.jpg" alt="Stock YouTube home"><img class="after" src="img/home-hero.jpg" alt="EliteYT home"><div class="bar"></div><span class="t l">YOUTUBE</span><span class="t r">ELITEYT</span><input type="range" min="0" max="100" value="50" aria-label="Compare before and after"></div>
+    <p class="lead">Streaming-app rows in YouTube's own design language. The left sidebar is gone; Home, Subscriptions and You sit next to your avatar, and the filter chips only appear once you scroll.</p>
     <div class="why">
-      <div><b>Carousel</b><span>Your last video (resume where you stopped), then the newest upload from channels you watched recently.</span></div>
-      <div><b>Continue watching</b><span>Progress bar and time left; positions saved while you watch, plus your YouTube history.</span></div>
-      <div><b>From your subscriptions</b><span>Right under Continue watching, with a "New" badge on unwatched uploads from the last 48 hours.</span></div>
+      <div><b>Carousel</b><span>Your last video, ready to resume, then the newest uploads from channels you watched recently.</span></div>
+      <div><b>Continue watching</b><span>Progress bar and time left, saved while you watch, plus your YouTube history.</span></div>
+      <div><b>From your subscriptions</b><span>A "New" badge on unwatched uploads from the last 48 hours.</span></div>
       <div><b>Calm thumbnails</b><span>A real frame from the middle of the video instead of creator artwork. DeArrow's community thumbnails win when they exist.</span></div>
     </div>
     <div class="shots" style="margin-top:20px">
-      <figure><img src="img/home-rows.jpg" alt="Continue watching row" loading="lazy"><figcaption>Continue watching, then YouTube's recommendations with calm thumbnails.</figcaption></figure>
+      <figure><img src="img/home-rows.jpg" alt="Continue watching row" loading="lazy"><figcaption>Continue watching, then recommendations with calm thumbnails.</figcaption></figure>
       <figure><img src="img/home-grid.jpg" alt="Calm thumbnails grid" loading="lazy"><figcaption>Real frames instead of shouting thumbnails. Live streams keep theirs.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="adblock">
+    <div class="eb">Ad blocker</div>
+    <h2>Ads, gone before they load.</h2>
+    <p class="lead">EliteYT has its own ad blocker that works on YouTube only. It doesn't need filter lists, doesn't touch other sites, and works without a second extension.</p>
+    <div class="flow">
+      <div><b>Stripped from the data</b><span>Video ads, feed, sidebar and search ads and promo banners are pruned from YouTube's own responses before the player sees them.</span></div>
+      <div><b>Slots hidden</b><span>Any ad placeholder that still renders is hidden, so the grid doesn't leave gaps.</span></div>
+      <div><b>Last resort</b><span>If an ad plays anyway, it's muted, run at 16× and skipped the moment Skip appears.</span></div>
+    </div>
+  </section>
+
+  <section id="filter">
+    <div class="eb">AI &amp; low-effort filter</div>
+    <h2>Less slop in your feed.</h2>
+    <p class="lead">Videos YouTube labels <b>Made with AI</b>, videos that call themselves AI-made, and low-effort formats like TTS reddit stories and hashtag spam get blurred with the reason. Reviews and news <i>about</i> AI are left alone.</p>
+    <div class="mock" aria-label="Illustration with invented videos">
+      <div class="card slop"><div class="th g1" data-len="0:58"></div><div class="meta"><div class="av g4"></div><div><b>Grandma's cat cooks dinner</b><span>Kitty Kitchen · 2.1M views</span></div></div>
+        <div class="tag"><b>Likely AI-generated</b><small>YouTube label: Made with AI</small><button type="button">Show</button></div></div>
+      <div class="card"><div class="th g3" data-len="18:42"></div><div class="meta"><div class="av g2"></div><div><b>I built a CPU from scratch on breadboards</b><span>Bench &amp; Lens · 840K views</span></div></div></div>
+      <div class="card slop"><div class="th g6" data-len="12:07"></div><div class="meta"><div class="av g5"></div><div><b>r/AskReddit: what's the creepiest thing you've seen?</b><span>Story Time TTS · 96K views</span></div></div>
+        <div class="tag"><b>Likely low-effort</b><small>TTS story format</small><button type="button">Show</button></div></div>
+    </div>
+    <div class="cover"><b>This looks like an AI-generated video</b><small>YouTube label: Made with AI · labelled AI-generated</small><div><button type="button">Watch anyway</button><button type="button">Always allow this channel</button></div></div>
+    <div class="why">
+      <div><b>Blur or hide</b><span>Blurred with a Show button, or gone from the feed entirely.</span></div>
+      <div><b>Strict mode</b><span>Flags on fewer signals when you want a cleaner feed.</span></div>
+      <div><b>Your lists win</b><span>Allow or block channels; one click from the cover trusts a channel for good.</span></div>
+      <div><b>Runs in your browser</b><span>Titles are scored locally; no video is sent to any AI service.</span></div>
+    </div>
+    <p class="note">Illustration with invented videos.</p>
+  </section>
+
+  <section id="contentid">
+    <div class="split">
+      <div>
+        <div class="eb">Content ID warning</div>
+        <h2>Know the music before you click.</h2>
+        <p class="lead">For streamers and editors: hover a video and EliteYT shows whether YouTube lists Content ID-matched music in it, with the song and artist. Steer clear of claims before you play something on stream.</p>
+        <ul class="list">
+          <li><b>Red badge</b> when YouTube lists matched music; the tooltip names every song.</li>
+          <li><b>Instant on hover</b>: cards on screen are checked in the background as you scroll.</li>
+          <li><b>Honest about limits</b>: "none listed" isn't a guarantee, since non-music claims don't show there.</li>
+        </ul>
+      </div>
+      <div class="mock" style="grid-template-columns:1fr 1fr" aria-label="Illustration with invented videos">
+        <div class="card"><div class="th g5" data-len="3:41"><span class="cid hit">♪ Content ID: Midnight Drive – Neon Avenue</span></div><div class="meta"><div class="av g1"></div><div><b>Night drive through the city, 4K</b><span>Slow Roads · 310K views</span></div></div></div>
+        <div class="card"><div class="th g2" data-len="9:15"><span class="cid">✓ No Content ID music listed</span></div><div class="meta"><div class="av g3"></div><div><b>Restoring a 1978 film camera</b><span>Bench &amp; Lens · 52K views</span></div></div></div>
+      </div>
     </div>
   </section>
 
@@ -120,44 +303,70 @@ footer{padding:40px 0 60px;color:var(--fg2);font-size:14px;border-top:1px solid 
     <div class="eb">Built in</div>
     <h2>SponsorBlock, DeArrow, Return YouTube Dislike.</h2>
     <p class="lead">Three community projects, wired in directly. SponsorBlock and DeArrow are asked by a 4-character hash prefix of the video ID, so they never learn exactly what you watch; Return YouTube Dislike needs the full ID.</p>
-    <div class="shots">
-      <figure><img src="img/sponsor.jpg" alt="Skipped sponsor" loading="lazy"><figcaption>Sponsor segments skipped with a toast, and coloured markers on the progress bar for every category.</figcaption></figure>
-    </div>
-    <div class="why">
-      <div><b>SponsorBlock</b><span>Skips sponsors, self-promo and reminders by default; intros, outros, filler and more are opt-in. Seek back into a segment and it plays.</span></div>
-      <div><b>DeArrow</b><span>Community titles and thumbnails. Hover a title to see the original.</span></div>
-      <div><b>Return YouTube Dislike</b><span>The dislike count is back, inside the dislike button.</span></div>
-      <div><b>Fast</b><span>Requests run in parallel, only for cards near the screen, and are cached across reloads.</span></div>
+    <div class="split">
+      <figure><img src="img/sponsor.jpg" alt="Skipped sponsor" loading="lazy"><figcaption>Sponsor segments skipped with a toast, and coloured markers on the progress bar.</figcaption></figure>
+      <ul class="list">
+        <li><b>SponsorBlock</b> skips sponsors, self-promo and reminders by default; intros, outros and filler are opt-in. Seek back into a segment and it plays.</li>
+        <li><b>DeArrow</b> swaps in community titles and thumbnails. Hover a title to see the original.</li>
+        <li><b>Return YouTube Dislike</b> puts the count back inside the dislike button.</li>
+        <li><b>Fast</b>: requests run in parallel, only for cards near the screen, and are cached across reloads.</li>
+      </ul>
     </div>
   </section>
 
   <section id="battery">
-    <div class="eb">Battery saver</div>
-    <h2>Easy on your battery.</h2>
-    <p class="lead">Watching fast doesn't need 1080p. While the laptop is unplugged, EliteYT lowers the quality as the speed rises and skips 60 fps streams.</p>
-    <div class="rules">speed ≥ 2.5×  <em>→</em>  480p<br>speed ≥ 1.75× <em>→</em>  720p<br>below 1.75×  <em>→</em>  1080p<br>60 fps        <em>→</em>  30 fps<br>Ambient mode  <em>→</em>  off</div>
-    <p class="lead" style="margin-top:18px">Speed keys: <code>[</code> slower, <code>]</code> faster, <code>\</code> reset. Speeds are remembered per channel; music channels keep their own.</p>
+    <div class="split">
+      <div>
+        <div class="eb">Speed &amp; battery</div>
+        <h2>Fast, and easy on your battery.</h2>
+        <p class="lead">Speeds are remembered per channel, music keeps its own, and a never-change list covers the rest. Keys: <kbd>[</kbd> slower, <kbd>]</kbd> faster, <kbd>\</kbd> reset. Unplugged on Chrome, quality drops as speed rises.</p>
+      </div>
+      <div class="rules">speed ≥ 2.5×  <em>→</em>  480p<br>speed ≥ 1.75× <em>→</em>  720p<br>below 1.75×  <em>→</em>  1080p<br>60 fps        <em>→</em>  30 fps<br>Ambient mode  <em>→</em>  off</div>
+    </div>
   </section>
 
   <section id="install">
     <div class="eb">Install</div>
-    <h2>Load it in Chrome or Helium.</h2>
-    <ol class="steps">
-      <li>Download or clone <a href="https://github.com/Dronzer-Studios/eliteyt">the repository</a>: <code>git clone https://github.com/Dronzer-Studios/eliteyt</code></li>
-      <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
-      <li>Click <b>Load unpacked</b> and pick the repository folder.</li>
-      <li>Open YouTube. Click the EliteYT button in the toolbar to open the Layout Studio, where every setting and layout lives.</li>
-    </ol>
+    <h2>Get EliteYT.</h2>
+    <p class="lead">Free, open source under GPL-3.0, no account, no telemetry. <a href="privacy.html">Privacy policy</a>.</p>
+    <div class="install">
+      <div class="box"><h3>Firefox</h3><p>On Firefox Add-ons; it updates itself. Firefox 140+, Android 142+.</p><a class="btn p" href="https://addons.mozilla.org/firefox/addon/eliteyt/">Add to Firefox</a></div>
+      <div class="box"><h3>Chrome, Helium &amp; Chromium</h3>
+        <ol class="steps">
+          <li>Clone or <a href="https://github.com/Dronzer-Studios/eliteyt/archive/refs/heads/main.zip">download</a> the repo: <code>git clone https://github.com/Dronzer-Studios/eliteyt</code></li>
+          <li>Open <code>chrome://extensions</code>, turn on <b>Developer mode</b>.</li>
+          <li><b>Load unpacked</b> and pick the folder.</li>
+          <li>Click the EliteYT button to open the Layout Studio.</li>
+        </ol>
+      </div>
+    </div>
   </section>
 </main>
 
-<footer><div class="wrap"><p class="credit">EliteYT is brought to you by <a href="https://github.com/Dronzer-Studios"><b>Dronzer Studios</b></a>, creators of <b>Thallium 81</b> &amp; hardware infrastructure.</p>EliteYT is not affiliated with YouTube or Google. SponsorBlock and DeArrow by Ajay Ramachandran; Return YouTube Dislike by its contributors.</div></footer>
+<footer><div class="wrap"><p class="credit">EliteYT is brought to you by <a href="https://github.com/Dronzer-Studios"><b>Dronzer Studios</b></a>, creators of <b>Thallium 81</b> &amp; hardware infrastructure.</p>EliteYT is not affiliated with YouTube or Google. SponsorBlock and DeArrow by Ajay Ramachandran; Return YouTube Dislike by its contributors. <a href="https://github.com/Dronzer-Studios/eliteyt">Source on GitHub</a> · <a href="privacy.html">Privacy</a></div></footer>
 
 <script>
 for (const c of document.querySelectorAll('.cmp')) {
   const r = c.querySelector('input');
   r.addEventListener('input', () => c.style.setProperty('--x', r.value + '%'));
 }
+const tabs = [...document.querySelectorAll('#studio .tabs button')], imgs = [...document.querySelectorAll('.stage img')], cap = document.querySelector('.stage-cap');
+const pick = (i) => {
+  tabs.forEach((t, j) => t.setAttribute('aria-selected', String(i === j)));
+  imgs.forEach((m, j) => m.classList.toggle('on', i === j));
+  cap.textContent = imgs[i].dataset.cap;
+};
+tabs.forEach((t, i) => t.addEventListener('click', () => pick(i)));
+pick(0);
+const PAIRS = { watch: ['img/before-watch.jpg', 'img/after-watch.jpg'], home: ['img/before-home.jpg', 'img/home-hero.jpg'] };
+const hc = document.getElementById('heroCmp'), ht = [...document.querySelectorAll('.hero-tabs button')];
+for (const b of ht) b.addEventListener('click', () => {
+  ht.forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+  const [a, z] = PAIRS[b.dataset.pair], im = hc.querySelectorAll('img');
+  im[0].src = a; im[1].src = z;
+});
+// the mock "Show" buttons reveal their card, like the extension
+for (const b of document.querySelectorAll('.tag button')) b.addEventListener('click', () => { b.closest('.card').classList.remove('slop'); b.parentElement.remove(); });
 </script>
 </body>
 </html>
