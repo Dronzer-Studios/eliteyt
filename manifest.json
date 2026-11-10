@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "EliteYT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "YouTube ad blocker, AI and low-effort video filter, SponsorBlock, DeArrow, dislikes, speed controls, battery saver, custom layouts.",
   "browser_specific_settings": {
     "gecko": { "id": "eliteyt@dronzer-studios", "strict_min_version": "140.0",
