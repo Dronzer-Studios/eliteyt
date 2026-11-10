@@ -284,7 +284,7 @@ body.dragging .list { outline-color: color-mix(in oklch, var(--yt-sub) 45%, tran
 .chatbox { height: 92px; border-radius: 8px; background: var(--yt-chip); padding: 8px; display: grid; gap: 6px; align-content: start; }
 /* compact blocks (narrow view) */
 .compact .block-body { display: flex; align-items: center; gap: 10px; }
-.compact .block-body .player { width: 120px; flex: none; }
+.compact .block-body .player { width: 100%; flex: none; } /* a narrow window plays the video full width */
 .compact .block-body .sk { flex: 1; }
 /* home sections */
 .hero { position: relative; height: 150px; border-radius: 10px; overflow: hidden; padding: 16px; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px;

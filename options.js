@@ -136,7 +136,7 @@ const watchBlocks = Object.fromEntries(Object.keys(NAMES).map((id) => [id, block
 const blockPieces = (g) => watchBlocks[Object.keys(BLOCK_GROUP).find((b) => BLOCK_GROUP[b] === g)].querySelector('.pieces');
 for (const g of Object.keys(PIECES)) blockPieces(g).append(...Object.values(pieceEls[g]));
 const stackBlocks = Object.fromEntries(Object.keys(NAMES).map((id) => [id, block(id, NAMES[id],
-  id === 'player' ? [playerMock(), sk(60)] : [sk(30 + (id.length * 7) % 50)], { cls: 'compact', fixed: id === 'player' })]));
+  id === 'player' ? playerMock() : [sk(30 + (id.length * 7) % 50)], { cls: 'compact', fixed: id === 'player' })]));
 const homeBlocks = {
   hero: block('hero', 'Carousel', h('div', { class: 'hero' }, h('small', {}, 'Continue watching'), h('b', {}, 'Restoring a 1978 film camera'), h('span', { class: 'pill' }, '▶ Resume'))),
   continue: block('continue', 'Continue watching', [h('h3', { class: 'shelf-h' }, 'Continue watching'),
