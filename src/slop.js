@@ -1,5 +1,5 @@
 // MAIN world: flags AI-generated and low-effort videos. Everything runs in the page; nothing is sent anywhere.
-//   Strong signal: YouTube's own "Altered or synthetic content" disclosure (watch page) and explicit AI labels.
+//   Strong signal: YouTube's own "Made with AI" label (watch page; feed cards via contentid.js) and explicit AI labels.
 //   Weaker signals add up: AI-tool names / #ai hashtags, and for low effort: hashtag spam, emoji and ALL-CAPS titles,
 //   TTS story formats, template clickbait. A card is blurred with the reason (or hidden, if the user chose that);
 //   one click shows it, and a channel can be trusted for good.
@@ -15,15 +15,15 @@
   // also strong: "made with Sora", "generated in Veo 3"
   const AI_MADE_WITH = /\b(made|created|generated|animated|rendered) (with|by|using|in) (openai'?s )?(sora|google veo|veo|kling|runway|midjourney|suno|udio|hailuo|pika|luma|stable diffusion|dall[- ·]?e|heygen|synthesia|grok imagine|seedance)\b/i;
   // medium: usually AI-made, but also how people talk *about* AI
-  const AI_MEDIUM = /\bai[- ](art|video|song|music ?video|music|cover|voice ?over|voice|influencer|baby|babies|cat|cats|dog|story|stories|girl|model)\b/i;
+  const AI_MEDIUM = /\bai[- ](art|video|song|music ?video|music|cover|voice ?over|voice|influencer|baby|babies|cat|cats|dog|story|stories|girl)\b/i;
   // tool names: weak on their own (Sora is also a game character, Veo also Spanish)
   const AI_TOOLS = /\b(sora( ?2)?|veo ?[23]|google veo|kling( ai)?|runway ?(ml|gen-?\d)|midjourney|suno( ai)?|udio|hailuo|minimax|pika ?(labs|art)?|luma (ai|dream machine)|stable diffusion|dall[- ·]?e|elevenlabs|heygen|synthesia|invideo ai|leonardo ai|grok imagine|seedance|wan ?2\.\d)\b/i;
   const AI_WEAK = /(^|[\s#])ai($|[\s.,!?:|)-])|\bartificial intelligence\b|\bai[- ]?made\b/i;
   const AI_CHANNEL = /(^|[^A-Za-z])(ai|AI|Ai)([^A-Za-z]|$)|[a-z]AI\b|\bAI[A-Z][a-z]/; // "Cinematic AI", "DreamAI", "AIStories"
   // the video is *about* AI (reviews, news, tutorials) rather than made by it
-  const ABOUT_AI = /\b(review|reviewed|tutorial|how to|explained|explainer|vs\.?|versus|news|comparison|compared|tested|testing|guide|course|react(s|ion)?|documentary|podcast|interview|lawsuit|dangers?|ethics|debate|jobs|update|announced|launch(es|ed)?|hands[- ]on|first look|prompt(s|ing)?|workflow)\b/i;
+  const ABOUT_AI = /\b(review|reviewed|tutorial|how to|explained|explainer|vs\.?|versus|news|comparison|compared|tested|testing|guide|course|react(s|ion)?|documentary|podcast|interview|lawsuit|dangers?|ethics|debate|jobs|update|announced|launch(es|ed)?|hands[- ]on|first look|prompt(s|ing)?|workflow|models?|released?|benchmarks?|openai|chatgpt|gpt|gemini|claude|llms?|agents?|coding|i (tried|tested|used)|is here|why|future|problem|scams?|fake|detect(or|ion)?|replac(e|ed|ing))\b/i;
   const LOW = [
-    [/\b(reddit stories|r\/(askreddit|aita|amitheasshole|tifu|prorevenge|maliciouscompliance|entitledparents)\b|text[- ]to[- ]speech|\btts\b|ai voice)\b/i, 3, 'TTS story format'],
+    [/\b(reddit stories|r\/(askreddit|aita|amitheasshole|tifu|prorevenge|maliciouscompliance|entitledparents)\b|text[- ]to[- ]speech|\btts\b)\b/i, 3, 'TTS story format'],
     [/\b(you won'?t believe|gone wrong|(gone )?emotional|try not to (laugh|cry)|99% of people|only (1|a genius)% can|wait for (it|the end)|watch till the end|satisfying video|oddly satisfying|life ?hacks?|brain ?rot)\b/i, 1, 'clickbait template'],
     [/\b\d+\s+(facts|things|secrets|mysteries|signs)\s+(you|that|about|nobody|no one)\b/i, 1, 'list template'],
     [/\b(compilation|tiktok compilation|funny moments compilation)\b/i, 1, 'compilation']
@@ -43,7 +43,8 @@
     if (weak) { ai += 1; why.push('mentions AI'); }
     if (tool && (strong || medium || ch)) { ai += 2; why.push(`made with ${tool}`); } else if (tool && weak) ai += 1;
     if (ch) { ai += 1; why.push('AI channel name'); }
-    if (ai && ABOUT_AI.test(t)) ai = Math.max(0, ai - 2); // a review of an AI tool isn't an AI video
+    // a review of an AI tool isn't an AI video: without an explicit "AI-generated" label, talk about AI never flags
+    if (ai && ABOUT_AI.test(t)) ai = strong ? ai - 2 : 0;
     if (s.lowEffort !== false) {
       for (const [re, w, label] of LOW) if (re.test(`${all} ${channel}`)) { low += w; why.push(label); }
       const tags = (t.match(SPAM_TAGS) || []).length, hashes = (t.match(/#[\p{L}\p{N}_]+/gu) || []).length;
@@ -82,6 +83,8 @@
   // our shelf cards keep "channel • meta" in one line
   const chanOf = (card) => textOf(card, CHAN).split(' • ')[0];
   const shown = new Set(); // titles the user chose to show this session
+  const aiIds = new Set(); // videos YouTube itself labels "Made with AI" (looked up by contentid.js)
+  const idOf = (card) => /(?:[?&]v=|\/shorts\/)([\w-]{11})/.exec(card.querySelector('a[href*="/watch?v="], a[href^="/shorts/"]')?.getAttribute('href') || '')?.[1] || '';
 
   function clear(card) {
     const o = outer(card);
@@ -92,12 +95,13 @@
   function mark(card) {
     const title = titleOf(card);
     if (!title) return;
-    const key = title + '|' + chanOf(card);
+    const labelled = aiIds.has(idOf(card));
+    const key = title + '|' + chanOf(card) + (labelled ? '|ai' : '');
     if (card.dataset.eytSlop === key) return; // already judged (YouTube recycles cards: re-judge when the title changes)
     clear(card);
     card.dataset.eytSlop = key;
     if (shown.has(key)) return;
-    const v = judge(title, chanOf(card), card.querySelector('a[aria-label]')?.getAttribute('aria-label') || '');
+    const v = judge(title, chanOf(card), card.querySelector('a[aria-label]')?.getAttribute('aria-label') || '', labelled);
     if (!v) return;
     const o = outer(card);
     if (s.slopHide) { o.classList.add('eyt-slop-hide'); return; }
@@ -130,14 +134,16 @@
 
   // ---------------- watch page ----------------
   const allowedHere = new Set();
-  // YouTube's synthetic-content disclosure lives in the description's "How this content was made" section
-  // Only the "Altered or synthetic content" note counts: the same section also carries non-AI notes
-  // (auto-dubbing, camera capture). ytInitialData is from the first page load and goes stale on SPA
-  // navigation, so it only counts when it belongs to the current video.
-  const SYNTH = /Altered or synthetic content/i;
+  // YouTube's "Made with AI" label lives in the description's "How this was made" section.
+  // Only the altered-or-generated note counts: the same section also carries non-AI notes (auto-dubbing,
+  // camera capture). Its help link is the same in every language; the wording is the fallback.
+  // ytInitialData is from the first page load and goes stale on SPA navigation, so it only counts when it
+  // belongs to the current video.
+  const SYNTH = /answer\/15447836|altered or synthetic content|altered or fully generated/i;
   const disclosed = (id) => {
+    if (aiIds.has(id)) return true;
     for (const el of document.querySelectorAll('ytd-watch-metadata how-this-was-made-section-view-model, ytd-watch-metadata [class*="HowThisWasMade"]')) {
-      if (SYNTH.test(el.textContent)) return true;
+      if (SYNTH.test(el.innerHTML)) return true;
     }
     const data = window.ytInitialData;
     if (!id || data?.currentVideoEndpoint?.watchEndpoint?.videoId !== id) return false;
@@ -186,5 +192,6 @@
     for (const c of document.querySelectorAll(CARD)) if (c.dataset.eytSlop) clear(c);
     scan(); checkWatch();
   });
+  document.addEventListener('eliteyt:ai', (e) => { aiIds.add(e.detail); scan(); if (player()?.getVideoData?.().video_id === e.detail) checkWatch(); });
   recheck();
 })();

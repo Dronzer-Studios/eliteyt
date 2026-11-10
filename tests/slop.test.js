@@ -26,6 +26,10 @@ const CORPUS = [
   ['I built a CPU from scratch', 'Ben Eater', null],
   ['Dubai Marina night walk 4K', 'Walk With Me', null],
   ['Why the AI bubble might burst | Economics explained', 'Economics Explained', null],
+  ['GPT-6 is the new AI model to beat', 'AI Explained', null],
+  ['I tried AI music with Suno for a week', 'The AI Advantage', null],
+  ['AI voice assistants are getting scary good', 'Tech Weekly', null],
+  ['Google just dropped a new AI video model: Veo 4', 'AI Search', null],
 ];
 const card = (i, [t, c]) => `<ytd-rich-item-renderer id="c${i}"><div id="content"><ytd-rich-grid-media>
   <a href="/watch?v=vid${String(i).padStart(8, '0')}"><div style="width:320px;height:180px;background:#456"></div></a>
@@ -62,7 +66,7 @@ addEventListener('load', () => document.dispatchEvent(new CustomEvent('yt-naviga
     const got = r.verdict?.kind || null;
     if (got === want) right++; else console.log(`   ✗ "${t}" [${c}] → ${got} (ai ${r.ai}, low ${r.low}: ${r.why.join(', ')}) expected ${want}`);
   }
-  ok(right === CORPUS.length, `scoring corpus: ${right}/${CORPUS.length} as expected (9 flagged, 11 normal incl. game/review/tutorial/news traps)`);
+  ok(right === CORPUS.length, `scoring corpus: ${right}/${CORPUS.length} as expected (9 flagged, 15 normal incl. game/review/tutorial/news traps)`);
 
   // feed cards: blur + reason + Show
   await p.waitForTimeout(800);
